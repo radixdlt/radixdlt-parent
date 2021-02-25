@@ -34,20 +34,22 @@ import com.radixdlt.client.core.network.RadixNode;
 import com.radixdlt.client.core.network.actions.SubmitAtomStatusAction;
 import com.radixdlt.identifiers.RRI;
 import com.radixdlt.identifiers.RadixAddress;
-import io.cucumber.java.en.Given;
-import io.cucumber.java.en.Then;
-import io.cucumber.java.en.When;
-import io.reactivex.Single;
-import io.reactivex.observers.TestObserver;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-import static com.radixdlt.client.core.atoms.AtomStatus.EVICTED_FAILED_CM_VERIFICATION;
+import io.cucumber.java.en.Given;
+import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
+import io.reactivex.Single;
+import io.reactivex.observers.TestObserver;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
+
+import static com.radixdlt.client.core.atoms.AtomStatus.EVICTED_FAILED_CM_VERIFICATION;
 
 /**
  * See <a href="https://radixdlt.atlassian.net/browse/RPNV1-356">RPNV1-356: Developer - Multiple atomic transfers</a>.
@@ -152,11 +154,11 @@ public class MultipleTransactions {
 	}
 
 	private SubmitAtomStatusAction createValidationError() {
-		return SubmitAtomStatusAction.fromStatusNotification(
+		return SubmitAtomStatusAction.create(
 			UUID.randomUUID().toString(),
-			Atom.create(List.of()),
+			Atom.create(),
 			nodeConnection,
-			new AtomStatusEvent(EVICTED_FAILED_CM_VERIFICATION)
+			AtomStatusEvent.create(EVICTED_FAILED_CM_VERIFICATION)
 		);
 	}
 

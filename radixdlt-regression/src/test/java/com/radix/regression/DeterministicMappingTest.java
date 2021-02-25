@@ -18,9 +18,12 @@
 
 package com.radix.regression;
 
+import org.assertj.core.api.SoftAssertions;
+import org.junit.Test;
+
 import com.radix.test.utils.TokenUtilities;
 import com.radixdlt.client.application.RadixApplicationAPI;
-import com.radixdlt.client.application.RadixApplicationAPI.Transaction;
+import com.radixdlt.client.application.Transaction;
 import com.radixdlt.client.application.identity.RadixIdentities;
 import com.radixdlt.client.application.identity.RadixIdentity;
 import com.radixdlt.client.application.translate.tokens.CreateTokenAction;
@@ -31,8 +34,6 @@ import com.radixdlt.client.core.atoms.ParticleGroup;
 import com.radixdlt.client.core.atoms.particles.SpunParticle;
 import com.radixdlt.identifiers.RRI;
 import com.radixdlt.identifiers.RadixAddress;
-import org.assertj.core.api.SoftAssertions;
-import org.junit.Test;
 
 import java.math.BigDecimal;
 import java.util.List;

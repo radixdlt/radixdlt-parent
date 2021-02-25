@@ -22,11 +22,11 @@
 
 package com.radixdlt.client.application.translate;
 
-import java.math.BigDecimal;
-import java.util.Optional;
-
 import com.radixdlt.client.core.atoms.Atom;
 import com.radixdlt.identifiers.RadixAddress;
+
+import java.math.BigDecimal;
+import java.util.Optional;
 
 /**
  * Interface for processing fees.
@@ -37,13 +37,8 @@ public interface FeeProcessor {
 	 *
 	 * @param actionProcessor An {@link ActionProcessor} to use to process any actions associated with the fee
 	 * @param address The address of the fee payee
-	 * @param feelessAtom The atom, without fees, for which to generate fees
+	 * @param noFeeAtom The atom, without fees, for which to generate fees
 	 * @param optionalFee The fee proposed by the client, if present
 	 */
-	void process(
-		ActionProcessor actionProcessor,
-		RadixAddress address,
-		Atom feelessAtom,
-		Optional<BigDecimal> optionalFee
-	);
+	void process(ActionProcessor actionProcessor, RadixAddress address, Atom noFeeAtom, Optional<BigDecimal> optionalFee);
 }

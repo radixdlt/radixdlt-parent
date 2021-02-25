@@ -79,6 +79,16 @@ public interface AtomStore {
 	Stream<Particle> getUpParticles(RadixAddress address, @Nullable String uuid);
 
 	/**
+	 * Retrieve the current set of validated up particles at a given shardable.
+	 *
+	 * @param address the address to get the particles under
+	 * @return a stream of all up particles of the current local view
+	 */
+	default Stream<Particle> getUpParticles(RadixAddress address) {
+		return getUpParticles(address, null);
+	}
+
+	/**
 	 * Adds the particle group to the staging area for the given uuid
 	 *
 	 * @param uuid the uuid to add the particle group to

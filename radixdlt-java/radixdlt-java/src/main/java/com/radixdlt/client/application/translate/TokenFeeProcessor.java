@@ -22,23 +22,23 @@
 
 package com.radixdlt.client.application.translate;
 
-import java.math.BigDecimal;
-import java.util.Objects;
-import java.util.Optional;
-
 import com.radixdlt.client.application.translate.tokens.BurnTokensAction;
-import com.radixdlt.client.application.translate.tokens.TokenUnitConversions;
 import com.radixdlt.client.core.atoms.Atom;
 import com.radixdlt.fees.FeeTable;
 import com.radixdlt.identifiers.RRI;
 import com.radixdlt.identifiers.RadixAddress;
+
+import java.math.BigDecimal;
+import java.util.Objects;
+import java.util.Optional;
+
+import static com.radixdlt.client.application.translate.tokens.TokenUnitConversions.subunitsToUnits;
 
 
 /**
  * Maps a complete list of particles ready to be submitted to a token fee particle group.
  */
 public final class TokenFeeProcessor implements FeeProcessor {
-
 	private final RRI tokenRri;
 	private final FeeTable feeTable;
 
@@ -54,14 +54,17 @@ public final class TokenFeeProcessor implements FeeProcessor {
 	}
 
 	@Override
-	public void process(ActionProcessor actionProcessor, RadixAddress address, Atom atom, Optional<BigDecimal> optionalFee) {
-		BigDecimal feeToPay = optionalFee.orElseGet(() -> TokenUnitConversions.subunitsToUnits(this.feeTable.feeFor(atom)));
-		int signum = feeToPay.signum();
-		if (signum < 0) {
-			throw new IllegalArgumentException("Token fee must be greater than or equal to zero: " + feeToPay);
-		}
-		if (feeToPay.signum() != 0) {
-			actionProcessor.process(BurnTokensAction.create(this.tokenRri, address, feeToPay));
+	public void process(ActionProcessor actionProcessor, RadixAddress address, Atom noFeeAtom, Optional<BigDecimal> optionalFee) {
+		var feeToPay = optionalFee.orElseGet(() -> subunitsToUnits(this.feeTable.feeFor(noFeeAtom)));
+
+		switch (feeToPay.signum()) {
+			default:
+				return;
+			case -1:
+				throw new IllegalArgumentException("Token fee must be greater than or equal to zero: " + feeToPay);
+			case 1:
+				actionProcessor.process(BurnTokensAction.create(tokenRri, address, feeToPay));
+				break;
 		}
 	}
 }

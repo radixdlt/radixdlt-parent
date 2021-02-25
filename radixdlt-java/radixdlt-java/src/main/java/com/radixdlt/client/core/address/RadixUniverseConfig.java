@@ -22,6 +22,8 @@
 
 package com.radixdlt.client.core.address;
 
+import org.bouncycastle.util.encoders.Base64;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.hash.HashCode;
 import com.google.common.io.ByteStreams;
@@ -39,7 +41,6 @@ import com.radixdlt.serialization.SerializerConstants;
 import com.radixdlt.serialization.SerializerDummy;
 import com.radixdlt.serialization.SerializerId2;
 import com.radixdlt.utils.RadixConstants;
-import org.bouncycastle.util.encoders.Base64;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -84,20 +85,17 @@ public class RadixUniverseConfig {
 	private List<Atom> genesis;
 
 	public static RadixUniverseConfig fromDsonBase64(String dsonBase64) {
-		byte[] bytes = Base64.decode(dsonBase64);
-		RadixUniverseConfig universe = null;
 		try {
-			universe = Serialize.getInstance().fromDson(bytes, RadixUniverseConfig.class);
+			return Serialize.getInstance().fromDson(Base64.decode(dsonBase64), RadixUniverseConfig.class);
 		} catch (DeserializeException e) {
 			throw new IllegalStateException("Failed to deserialize bytes", e);
 		}
-		return universe;
 	}
 
 	public static RadixUniverseConfig fromInputStream(InputStream inputStream) {
 		try {
-			byte[] bytes = ByteStreams.toByteArray(inputStream);
-			String json = new String(bytes, RadixConstants.STANDARD_CHARSET);
+			var bytes = ByteStreams.toByteArray(inputStream);
+			var json = new String(bytes, RadixConstants.STANDARD_CHARSET);
 			return Serialize.getInstance().fromJson(json, RadixUniverseConfig.class);
 		} catch (IOException e) {
 			throw new UncheckedIOException("Reading universe configuration", e);
@@ -142,7 +140,7 @@ public class RadixUniverseConfig {
 	}
 
 	public RadixAddress getSystemAddress() {
-		return new RadixAddress((byte) (this.magic & 0xff), creator);
+		return new RadixAddress((byte) (magic & 0xff), creator);
 	}
 
 	public long timestamp() {
@@ -158,7 +156,7 @@ public class RadixUniverseConfig {
 	}
 
 	public EUID euid() {
-		return EUID.fromHash(this.getHash());
+		return EUID.fromHash(getHash());
 	}
 
 	@Override
@@ -173,7 +171,7 @@ public class RadixUniverseConfig {
 
 	@Override
 	public boolean equals(Object o) {
-		if (o == null || !(o instanceof RadixUniverseConfig)) {
+		if (!(o instanceof RadixUniverseConfig)) {
 			return false;
 		}
 

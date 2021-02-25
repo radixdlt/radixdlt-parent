@@ -68,7 +68,7 @@ public enum Bootstrap implements BootstrapConfig {
 
 	Bootstrap(Supplier<RadixUniverseConfig> config, Observable<RadixNode> seeds) {
 		this.config = config;
-		this.discoveryEpics = () -> Collections.singletonList(new DiscoverNodesEpic(seeds, config.get()));
+		this.discoveryEpics = () -> List.of(DiscoverNodesEpic.create(seeds, config.get()));
 		this.initialNetwork = ImmutableSet.of();
 	}
 

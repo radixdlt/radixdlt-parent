@@ -17,19 +17,9 @@
 
 package com.radix.test.utils;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.math.BigDecimal;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.Optional;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.google.common.collect.ImmutableList;
 import com.radixdlt.client.application.RadixApplicationAPI;
 import com.radixdlt.client.application.identity.RadixIdentity;
 import com.radixdlt.client.atommodel.unique.UniqueParticle;
@@ -40,8 +30,20 @@ import com.radixdlt.client.core.ledger.AtomObservation;
 import com.radixdlt.identifiers.EUID;
 import com.radixdlt.identifiers.RRI;
 import com.radixdlt.identifiers.RadixAddress;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.math.BigDecimal;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
 import io.reactivex.Observable;
 import io.reactivex.disposables.Disposable;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 public final class TokenUtilities {
@@ -83,7 +85,7 @@ public final class TokenUtilities {
 
 		// Keep updating balances
 		Disposable d = api.pull();
-		Atom dummyAtom = Atom.create(ImmutableList.of());
+		Atom dummyAtom = Atom.create();
 		try {
 			long waitDelayMs = 1000L;
 			delayForMs(waitDelayMs);

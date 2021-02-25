@@ -23,11 +23,13 @@
 package com.radixdlt.client.core.ledger;
 
 import com.radixdlt.client.core.network.RadixNetworkController;
-import com.radixdlt.client.core.network.actions.FetchAtomsAction;
 import com.radixdlt.client.core.network.actions.FetchAtomsCancelAction;
 import com.radixdlt.client.core.network.actions.FetchAtomsRequestAction;
 import com.radixdlt.identifiers.RadixAddress;
+
 import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -55,24 +57,23 @@ public class RadixAtomPuller implements AtomPuller {
 	 * address this will continue fetching and storing atoms.
 	 *
 	 * @param address shard address to get atoms from
+	 *
 	 * @return disposable to dispose to stop fetching
 	 */
 	@Override
 	public Observable<Object> pull(RadixAddress address) {
-		return cache.computeIfAbsent(
-			address,
-			addr ->
-				Observable.create(emitter -> {
-					final FetchAtomsAction initialAction = FetchAtomsRequestAction.newRequest(addr);
+		return cache.computeIfAbsent(address, this::observableForAddress);
+	}
 
-					emitter.setCancellable(() -> {
-						controller.dispatch(FetchAtomsCancelAction.of(initialAction.getUuid(), initialAction.getAddress()));
-					});
+	private Observable<Object> observableForAddress(RadixAddress address) {
+		return Observable.create(emitter -> dispatchRequest(emitter, address)).publish().refCount();
+	}
 
-					controller.dispatch(initialAction);
-				})
-				.publish()
-				.refCount()
-		);
+	private void dispatchRequest(final ObservableEmitter<?> emitter, final RadixAddress address) {
+		var initialAction = FetchAtomsRequestAction.create(address);
+
+		emitter.setCancellable(() -> controller.dispatch(FetchAtomsCancelAction.create(initialAction)));
+
+		controller.dispatch(initialAction);
 	}
 }

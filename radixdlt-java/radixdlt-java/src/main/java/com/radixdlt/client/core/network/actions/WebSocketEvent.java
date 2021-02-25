@@ -25,29 +25,19 @@ package com.radixdlt.client.core.network.actions;
 import com.radixdlt.client.core.network.RadixNode;
 import com.radixdlt.client.core.network.RadixNodeAction;
 import com.radixdlt.client.core.network.websocket.WebSocketStatus;
+
 import java.util.Objects;
 
 /**
  * A dispatchable event action signifying an event which has occurred to a websocket.
  */
 public final class WebSocketEvent implements RadixNodeAction {
-	public enum WebSocketEventType {
-		CONNECTING,
-		CONNECTED,
-		CLOSING,
-		DISCONNECTED,
-		FAILED,
-	}
-
+	private final WebSocketStatus status;
 	private final RadixNode node;
-	private final WebSocketEventType type;
 
-	public WebSocketEvent(WebSocketEventType type, RadixNode node) {
-		Objects.requireNonNull(type);
-		Objects.requireNonNull(node);
-
-		this.type = type;
+	private WebSocketEvent(RadixNode node, WebSocketStatus status) {
 		this.node = node;
+		this.status = status;
 	}
 
 	@Override
@@ -55,16 +45,19 @@ public final class WebSocketEvent implements RadixNodeAction {
 		return node;
 	}
 
-	public WebSocketEventType getType() {
-		return type;
+	public WebSocketStatus getStatus() {
+		return status;
 	}
 
-	public static WebSocketEvent nodeStatus(RadixNode node, WebSocketStatus status) {
-		return new WebSocketEvent(WebSocketEventType.valueOf(status.name()), node);
+	public static WebSocketEvent create(RadixNode node, WebSocketStatus status) {
+		Objects.requireNonNull(status);
+		Objects.requireNonNull(node);
+
+		return new WebSocketEvent(node, status);
 	}
 
 	@Override
 	public String toString() {
-		return "WEBSOCKET_EVENT(" + type + ") " + node;
+		return "WEBSOCKET_EVENT(" + status + ") " + node;
 	}
 }

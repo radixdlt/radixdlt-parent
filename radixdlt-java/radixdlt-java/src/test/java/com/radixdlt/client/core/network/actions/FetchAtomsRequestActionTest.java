@@ -29,7 +29,7 @@ import org.junit.Test;
 public class FetchAtomsRequestActionTest {
 	@Test
 	public void when_initializing_with_null__npe_should_be_thrown() {
-		assertThatThrownBy(() -> FetchAtomsRequestAction.newRequest(null)).isInstanceOf(NullPointerException.class);
+		assertThatThrownBy(() -> FetchAtomsRequestAction.create(null)).isInstanceOf(NullPointerException.class);
 	}
 
 }

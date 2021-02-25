@@ -23,23 +23,20 @@
 package com.radixdlt.client.atommodel.tokens;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.radixdlt.identifiers.RadixAddress;
+import com.radixdlt.client.atommodel.Identifiable;
+import com.radixdlt.client.atommodel.Ownable;
 import com.radixdlt.client.core.atoms.particles.Particle;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
+import com.radixdlt.identifiers.EUID;
+import com.radixdlt.identifiers.RRI;
+import com.radixdlt.identifiers.RadixAddress;
 import com.radixdlt.serialization.DsonOutput;
 import com.radixdlt.serialization.DsonOutput.Output;
 import com.radixdlt.serialization.SerializerId2;
 import com.radixdlt.utils.UInt256;
 
-import com.radixdlt.client.atommodel.Identifiable;
-import com.radixdlt.client.atommodel.Ownable;
-import com.radixdlt.identifiers.EUID;
-import com.radixdlt.identifiers.RRI;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @SerializerId2("radix.particles.mutable_supply_token_definition")
 public class MutableSupplyTokenDefinitionParticle extends Particle implements Identifiable, Ownable {
@@ -104,14 +101,14 @@ public class MutableSupplyTokenDefinitionParticle extends Particle implements Id
 		this.name = name;
 		this.description = description;
 		this.granularity = granularity;
-		this.tokenPermissions = ImmutableMap.copyOf(tokenPermissions);
+		this.tokenPermissions = Map.copyOf(tokenPermissions);
 		this.iconUrl = iconUrl;
 		this.url = url;
 	}
 
 	@Override
 	public Set<EUID> getDestinations() {
-		return ImmutableSet.of(this.rri.getAddress().euid());
+		return Set.of(this.rri.getAddress().euid());
 	}
 
 	@Override
@@ -161,25 +158,32 @@ public class MutableSupplyTokenDefinitionParticle extends Particle implements Id
 
 	@JsonProperty("permissions")
 	private void setJsonPermissions(Map<String, String> permissions) {
-		if (permissions != null) {
-			this.tokenPermissions = permissions.entrySet().stream()
-				.collect(Collectors.toMap(
-					e -> TokenTransition.valueOf(e.getKey().toUpperCase()),
-					e -> TokenPermission.valueOf(e.getValue().toUpperCase())
-				));
-		} else {
+		if (permissions == null) {
 			throw new IllegalArgumentException("Permissions cannot be null.");
 		}
+
+		this.tokenPermissions = permissions.entrySet().stream()
+			.collect(Collectors.toMap(
+				e -> TokenTransition.valueOf(e.getKey().toUpperCase()),
+				e -> TokenPermission.valueOf(e.getValue().toUpperCase())
+			));
 	}
 
 	@Override
 	public String toString() {
-		String tokenPermissionsStr = (tokenPermissions == null)
-			? "null"
-			: tokenPermissions.entrySet().stream().map(e -> String.format("%s:%s", e.getKey().toString().toLowerCase(),
-				e.getValue().toString().toLowerCase())).collect(Collectors.joining(","));
-		return String.format("%s[%s (%s:%s), (%s:%s)]", getClass().getSimpleName(),
-			String.valueOf(this.rri), name, description,
-			String.valueOf(granularity), tokenPermissionsStr);
+		return String.format(
+			"%s[%s (%s:%s), (%s:%s)]",
+			getClass().getSimpleName(), this.rri, name, description, granularity, tokenPermissionsToString()
+		);
+	}
+
+	private String tokenPermissionsToString() {
+		return (tokenPermissions == null)
+			   ? "null"
+			   : tokenPermissions.entrySet().stream().map(this::formatOnePermission).collect(Collectors.joining(","));
+	}
+
+	private String formatOnePermission(final Map.Entry<TokenTransition, TokenPermission> e) {
+		return String.format("%s:%s", e.getKey().toString().toLowerCase(), e.getValue().toString().toLowerCase());
 	}
 }

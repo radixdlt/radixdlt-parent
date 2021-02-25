@@ -25,8 +25,8 @@ package com.radixdlt.client.core.network.epics;
 import com.radixdlt.client.core.address.RadixUniverseConfig;
 import com.radixdlt.client.core.network.RadixNetworkEpic;
 import com.radixdlt.client.core.network.RadixNetworkState;
-import com.radixdlt.client.core.network.RadixNodeAction;
 import com.radixdlt.client.core.network.RadixNode;
+import com.radixdlt.client.core.network.RadixNodeAction;
 import com.radixdlt.client.core.network.actions.AddNodeAction;
 import com.radixdlt.client.core.network.actions.DiscoverMoreNodesAction;
 import com.radixdlt.client.core.network.actions.DiscoverMoreNodesErrorAction;
@@ -36,10 +36,13 @@ import com.radixdlt.client.core.network.actions.GetNodeDataRequestAction;
 import com.radixdlt.client.core.network.actions.GetUniverseRequestAction;
 import com.radixdlt.client.core.network.actions.GetUniverseResponseAction;
 import com.radixdlt.client.core.network.actions.NodeUniverseMismatch;
-import io.reactivex.Observable;
-import java.util.Arrays;
+import com.radixdlt.client.core.network.jsonrpc.NodeRunnerData;
+
+import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
+import io.reactivex.Observable;
 
 /**
  * Epic which manages simple bootstrapping and discovers nodes one degree out from the initial seeds.
@@ -48,55 +51,49 @@ public final class DiscoverNodesEpic implements RadixNetworkEpic {
 	private final Observable<RadixNode> seeds;
 	private final RadixUniverseConfig config;
 
-	public DiscoverNodesEpic(Observable<RadixNode> seeds, RadixUniverseConfig config) {
-		this.seeds = Objects.requireNonNull(seeds);
-		this.config = Objects.requireNonNull(config);
+	private DiscoverNodesEpic(Observable<RadixNode> seeds, RadixUniverseConfig config) {
+		this.seeds = seeds;
+		this.config = config;
+	}
+
+	public static DiscoverNodesEpic create(Observable<RadixNode> seeds, RadixUniverseConfig config) {
+		Objects.requireNonNull(seeds);
+		Objects.requireNonNull(config);
+
+		return new DiscoverNodesEpic(seeds, config);
 	}
 
 	@Override
 	public Observable<RadixNodeAction> epic(Observable<RadixNodeAction> updates, Observable<RadixNetworkState> networkState) {
-		Observable<RadixNodeAction> getSeedUniverses = updates
+		var getSeedUniverses = updates
 			.ofType(DiscoverMoreNodesAction.class)
 			.firstOrError()
 			.flatMapObservable(i -> seeds)
-			.<RadixNodeAction>map(GetUniverseRequestAction::of)
-			.onErrorReturn(DiscoverMoreNodesErrorAction::new);
+			.<RadixNodeAction>map(GetUniverseRequestAction::create)
+			.onErrorReturn(DiscoverMoreNodesErrorAction::create);
 
 		// TODO: Store universes in node table instead and filter out node in FindANodeEpic
-		Observable<RadixNodeAction> seedUniverseMismatch = updates
+		var seedUniverseMismatch = updates
 			.ofType(GetUniverseResponseAction.class)
 			.filter(u -> !u.getResult().equals(config))
-			.map(u -> new NodeUniverseMismatch(u.getNode(), config, u.getResult()));
+			.map(u -> NodeUniverseMismatch.create(u.getNode(), config, u.getResult()));
 
-		Observable<RadixNode> connectedSeeds = updates
+		var connectedSeeds = updates
 			.ofType(GetUniverseResponseAction.class)
 			.filter(u -> u.getResult().equals(config))
 			.map(GetUniverseResponseAction::getNode)
 			.publish()
 			.autoConnect(3);
 
-		Observable<RadixNodeAction> addSeeds = connectedSeeds.map(AddNodeAction::of);
-		Observable<RadixNodeAction> addSeedData = connectedSeeds.map(GetNodeDataRequestAction::of);
-		Observable<RadixNodeAction> addSeedSiblings = connectedSeeds.map(GetLivePeersRequestAction::of);
+		var addSeeds = connectedSeeds.map(AddNodeAction::create);
+		var addSeedData = connectedSeeds.map(GetNodeDataRequestAction::create);
+		var addSeedSiblings = connectedSeeds.map(GetLivePeersRequestAction::create);
 
-		Observable<RadixNodeAction> addNodes = updates
+		var addNodes = updates
 			.ofType(GetLivePeersResultAction.class)
-			.flatMap(u ->
-				Observable.combineLatest(
-					Observable.just(u.getResult()),
-					Observable.concat(networkState.firstOrError().toObservable(), Observable.never()),
-					(data, state) ->
-						data.stream()
-							.map(d -> {
-								RadixNode node = new RadixNode(d.getIp(), u.getNode().isSsl(), u.getNode().getPort());
-								return state.getNodeStates().containsKey(node) ? null : AddNodeAction.of(node, d);
-							})
-							.filter(Objects::nonNull)
-							.collect(Collectors.toSet())
-				).flatMapIterable(i -> i)
-			);
+			.flatMap(u -> combineLatest(networkState, u));
 
-		return Observable.merge(Arrays.asList(
+		return Observable.merge(List.of(
 			addSeeds,
 			addSeedData,
 			addSeedSiblings,
@@ -104,5 +101,22 @@ public final class DiscoverNodesEpic implements RadixNetworkEpic {
 			getSeedUniverses,
 			seedUniverseMismatch
 		));
+	}
+
+	private Observable<AddNodeAction> combineLatest(final Observable<RadixNetworkState> networkState, final GetLivePeersResultAction u) {
+		return Observable.combineLatest(
+			Observable.just(u.getResult()),
+			Observable.concat(networkState.firstOrError().toObservable(), Observable.never()),
+			(data, state) ->
+				data.stream()
+					.map(d -> toAddNodeAction(u, state, d))
+					.filter(Objects::nonNull)
+					.collect(Collectors.toSet())
+		).flatMapIterable(i -> i);
+	}
+
+	private AddNodeAction toAddNodeAction(GetLivePeersResultAction action, RadixNetworkState state, NodeRunnerData data) {
+		var node = new RadixNode(data.getIp(), action.getNode().isSsl(), action.getNode().getPort());
+		return state.getNodeStates().containsKey(node) ? null : AddNodeAction.create(node, data);
 	}
 }

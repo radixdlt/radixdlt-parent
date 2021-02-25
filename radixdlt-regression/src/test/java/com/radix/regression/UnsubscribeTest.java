@@ -28,8 +28,8 @@ import org.junit.Test;
 
 import com.radix.test.utils.TokenUtilities;
 import com.radixdlt.client.application.RadixApplicationAPI;
-import com.radixdlt.client.application.RadixApplicationAPI.Result;
-import com.radixdlt.client.application.RadixApplicationAPI.Transaction;
+import com.radixdlt.client.application.Result;
+import com.radixdlt.client.application.Transaction;
 import com.radixdlt.client.application.identity.RadixIdentities;
 import com.radixdlt.client.application.translate.data.PlaintextMessage;
 import com.radixdlt.client.application.translate.unique.PutUniqueIdAction;

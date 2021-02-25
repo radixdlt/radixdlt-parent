@@ -24,6 +24,7 @@ package com.radixdlt.client.core.network.actions;
 
 import com.radixdlt.client.core.network.RadixNode;
 import com.radixdlt.client.core.network.jsonrpc.NodeRunnerData;
+
 import java.util.Objects;
 
 /**
@@ -34,14 +35,14 @@ public final class GetNodeDataResultAction implements JsonRpcResultAction<NodeRu
 	private final NodeRunnerData data;
 
 	private GetNodeDataResultAction(RadixNode node, NodeRunnerData data) {
-		Objects.requireNonNull(node);
-		Objects.requireNonNull(data);
-
 		this.node = node;
 		this.data = data;
 	}
 
-	public static GetNodeDataResultAction of(RadixNode node, NodeRunnerData data) {
+	public static GetNodeDataResultAction create(RadixNode node, NodeRunnerData data) {
+		Objects.requireNonNull(node);
+		Objects.requireNonNull(data);
+
 		return new GetNodeDataResultAction(node, data);
 	}
 

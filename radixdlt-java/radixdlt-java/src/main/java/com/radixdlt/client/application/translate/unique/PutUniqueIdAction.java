@@ -24,18 +24,19 @@ package com.radixdlt.client.application.translate.unique;
 
 import com.radixdlt.client.application.translate.Action;
 import com.radixdlt.identifiers.RRI;
+
 import java.util.Objects;
 
 public class PutUniqueIdAction implements Action {
 	private final RRI rri;
 
 	private PutUniqueIdAction(RRI rri) {
-		Objects.requireNonNull(rri);
-
 		this.rri = rri;
 	}
 
 	public static PutUniqueIdAction create(RRI rri) {
+		Objects.requireNonNull(rri);
+
 		return new PutUniqueIdAction(rri);
 	}
 

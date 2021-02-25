@@ -22,14 +22,9 @@
 
 package com.radixdlt.client.application.identity;
 
-import com.radixdlt.crypto.encryption.EncryptedPrivateKey;
-import com.radixdlt.crypto.exception.CryptoException;
-import com.radixdlt.identifiers.EUID;
-
 import com.radixdlt.client.core.atoms.Atom;
 import com.radixdlt.crypto.ECKeyPair;
 import com.radixdlt.crypto.ECPublicKey;
-import com.radixdlt.crypto.ECDSASignature;
 
 import io.reactivex.Single;
 
@@ -41,36 +36,12 @@ public class LocalRadixIdentity implements RadixIdentity {
 	}
 
 	public Atom syncAddSignature(Atom atom) {
-		ECDSASignature signature = myKey.sign(atom.getHash().asBytes());
-		EUID signatureId = myKey.euid();
-		return atom.addSignature(signatureId, signature);
+		return atom.addSignature(myKey.euid(), myKey.sign(atom.getHash().asBytes()));
 	}
 
 	@Override
 	public Single<Atom> addSignature(Atom atom) {
-		return Single.create(emitter -> {
-			final Atom signedAtom = syncAddSignature(atom);
-			emitter.onSuccess(signedAtom);
-		});
-	}
-
-	@Override
-	public Single<UnencryptedData> decrypt(Data data) {
-		boolean encrypted = (Boolean) data.getMetaData().get("encrypted");
-		if (encrypted) {
-			for (EncryptedPrivateKey protector : data.getEncryptor().getProtectors()) {
-				// TODO: remove exception catching
-				try {
-					byte[] bytes = myKey.decrypt(data.getBytes(), protector);
-					return Single.just(new UnencryptedData(bytes, data.getMetaData(), true));
-				} catch (CryptoException e) {
-					// Decryption failed, try the next one
-				}
-			}
-			return Single.error(new CryptoException("Cannot decrypt"));
-		} else {
-			return Single.just(new UnencryptedData(data.getBytes(), data.getMetaData(), false));
-		}
+		return Single.create(emitter -> emitter.onSuccess(syncAddSignature(atom)));
 	}
 
 	@Override

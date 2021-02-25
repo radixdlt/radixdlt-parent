@@ -23,27 +23,26 @@
 package com.radixdlt.client.atommodel.tokens;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.radixdlt.client.atommodel.Accountable;
 import com.radixdlt.client.atommodel.Ownable;
-import com.radixdlt.identifiers.RadixAddress;
 import com.radixdlt.client.atommodel.tokens.MutableSupplyTokenDefinitionParticle.TokenTransition;
 import com.radixdlt.client.core.atoms.particles.Particle;
 import com.radixdlt.identifiers.EUID;
 import com.radixdlt.identifiers.RRI;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
+import com.radixdlt.identifiers.RadixAddress;
 import com.radixdlt.serialization.DsonOutput;
 import com.radixdlt.serialization.DsonOutput.Output;
 import com.radixdlt.serialization.SerializerId2;
 import com.radixdlt.utils.UInt256;
 
+import java.util.Collections;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 /**
- *  A particle which represents an amount of unallocated tokens which can be minted.
+ * A particle which represents an amount of unallocated tokens which can be minted.
  */
 @SerializerId2("radix.particles.unallocated_tokens")
 public class UnallocatedTokensParticle extends Particle implements Accountable, Ownable {
@@ -67,7 +66,6 @@ public class UnallocatedTokensParticle extends Particle implements Accountable, 
 	private Map<TokenTransition, TokenPermission> tokenPermissions;
 
 	public UnallocatedTokensParticle() {
-		super();
 	}
 
 	public UnallocatedTokensParticle(
@@ -87,12 +85,12 @@ public class UnallocatedTokensParticle extends Particle implements Accountable, 
 		this.granularity = granularity;
 		this.nonce = nonce;
 		this.amount = amount;
-		this.tokenPermissions = ImmutableMap.copyOf(tokenPermissions);
+		this.tokenPermissions = Map.copyOf(tokenPermissions);
 	}
 
 	@Override
 	public Set<EUID> getDestinations() {
-		return ImmutableSet.of(this.tokenDefinitionReference.getAddress().euid());
+		return Set.of(tokenDefinitionReference.getAddress().euid());
 	}
 
 	public Map<TokenTransition, TokenPermission> getTokenPermissions() {
@@ -102,21 +100,21 @@ public class UnallocatedTokensParticle extends Particle implements Accountable, 
 	@JsonProperty("permissions")
 	@DsonOutput(value = {Output.ALL})
 	private Map<String, String> getJsonPermissions() {
-		return this.tokenPermissions.entrySet().stream()
+		return tokenPermissions.entrySet().stream()
 			.collect(Collectors.toMap(e -> e.getKey().name().toLowerCase(), e -> e.getValue().name().toLowerCase()));
 	}
 
 	@JsonProperty("permissions")
 	private void setJsonPermissions(Map<String, String> permissions) {
-		if (permissions != null) {
-			this.tokenPermissions = permissions.entrySet().stream()
-				.collect(Collectors.toMap(
-					e -> TokenTransition.valueOf(e.getKey().toUpperCase()),
-					e -> TokenPermission.valueOf(e.getValue().toUpperCase())
-				));
-		} else {
+		if (permissions == null) {
 			throw new IllegalArgumentException("Permissions cannot be null.");
 		}
+
+		tokenPermissions = permissions.entrySet().stream()
+			.collect(Collectors.toMap(
+				e -> TokenTransition.valueOf(e.getKey().toUpperCase()),
+				e -> TokenPermission.valueOf(e.getValue().toUpperCase())
+			));
 	}
 
 	@Override
@@ -126,32 +124,30 @@ public class UnallocatedTokensParticle extends Particle implements Accountable, 
 
 	@Override
 	public RadixAddress getAddress() {
-		return this.tokenDefinitionReference.getAddress();
+		return tokenDefinitionReference.getAddress();
 	}
 
 	public RRI getTokDefRef() {
-		return this.tokenDefinitionReference;
+		return tokenDefinitionReference;
 	}
 
 	public UInt256 getGranularity() {
-		return this.granularity;
+		return granularity;
 	}
 
 	@Override
 	public String toString() {
-		return String.format("%s[%s:%s:%s:%s]",
-			getClass().getSimpleName(),
-			String.valueOf(tokenDefinitionReference),
-			String.valueOf(amount),
-			String.valueOf(granularity),
-			nonce);
+		return String.format(
+			"%s[%s:%s:%s:%s]",
+			getClass().getSimpleName(), tokenDefinitionReference, amount, granularity, nonce
+		);
 	}
 
 	public UInt256 getAmount() {
-		return this.amount;
+		return amount;
 	}
 
 	public long getNonce() {
-		return this.nonce;
+		return nonce;
 	}
 }

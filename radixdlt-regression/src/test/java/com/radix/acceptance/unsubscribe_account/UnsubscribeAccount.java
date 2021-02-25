@@ -19,7 +19,7 @@ package com.radix.acceptance.unsubscribe_account;
 
 import com.radix.regression.Util;
 import com.radix.test.utils.TokenUtilities;
-import com.radixdlt.client.application.RadixApplicationAPI.Transaction;
+import com.radixdlt.client.application.Transaction;
 import com.radixdlt.client.core.RadixEnv;
 import com.radixdlt.client.core.atoms.AtomStatus;
 import com.radixdlt.client.core.atoms.AtomStatusEvent;
@@ -28,6 +28,7 @@ import com.radixdlt.client.core.network.RadixNode;
 import com.radixdlt.client.core.network.jsonrpc.RadixJsonRpcClient.Notification;
 import com.radixdlt.client.core.network.jsonrpc.RadixJsonRpcClient.NotificationType;
 import com.radixdlt.crypto.ECKeyPair;
+
 import io.reactivex.Observable;
 
 import java.math.BigDecimal;
@@ -49,6 +50,7 @@ import com.radixdlt.client.core.network.jsonrpc.AtomQuery;
 import com.radixdlt.client.core.network.jsonrpc.RadixJsonRpcClient;
 import com.radixdlt.client.core.network.websocket.WebSocketClient;
 import com.radixdlt.client.core.network.websocket.WebSocketStatus;
+
 import io.cucumber.java.After;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -114,7 +116,7 @@ public class UnsubscribeAccount {
 				if (n.getType() == NotificationType.START) {
 					return this.jsonRpcClient.sendAtomsSubscribe(
 						this.uuid,
-						new AtomQuery(this.api.getAddress())
+						AtomQuery.create(this.api.getAddress())
 					).andThen(Observable.empty());
 				} else {
 					return Observable.just(n.getEvent());
@@ -140,7 +142,7 @@ public class UnsubscribeAccount {
 				if (n.getType() == NotificationType.START) {
 					return this.jsonRpcClient.sendAtomsSubscribe(
 						this.otherUuid,
-						new AtomQuery(this.api.getAddress())
+						AtomQuery.create(this.api.getAddress())
 					).andThen(Observable.empty());
 				} else {
 					return Observable.just(n.getEvent());
@@ -171,7 +173,7 @@ public class UnsubscribeAccount {
 				if (n.getType() == NotificationType.START) {
 					return this.jsonRpcClient.sendAtomsSubscribe(
 						this.otherUuid,
-						new AtomQuery(this.api.getAddress())
+						AtomQuery.create(this.api.getAddress())
 					).andThen(Observable.empty());
 				} else {
 					return Observable.just(n.getEvent());
@@ -302,7 +304,7 @@ public class UnsubscribeAccount {
 			.blockingFirst();
 
 		this.webSocketClient = new WebSocketClient(listener ->
-			HttpClients.getSslAllTrustingClient().newWebSocket(node.getWebSocketEndpoint(), listener)
+													   HttpClients.getSslAllTrustingClient().newWebSocket(node.getWebSocketEndpoint(), listener)
 		);
 		this.webSocketClient.connect();
 		this.webSocketClient.getState()

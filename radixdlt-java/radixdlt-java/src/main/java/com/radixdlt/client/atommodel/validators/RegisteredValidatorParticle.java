@@ -77,17 +77,12 @@ public final class RegisteredValidatorParticle extends Particle implements Accou
 	}
 
 	public RegisteredValidatorParticle copyWithNonce(long nonce) {
-		return new RegisteredValidatorParticle(
-			this.address,
-			this.allowedDelegators,
-			this.url,
-			nonce
-		);
+		return new RegisteredValidatorParticle(this.address, this.allowedDelegators, this.url, nonce);
 	}
 
 	@Override
 	public Set<EUID> getDestinations() {
-		return ImmutableSet.of(this.address.euid());
+		return Set.of(this.address.euid());
 	}
 
 	public boolean allowsDelegator(RadixAddress delegator) {
@@ -118,6 +113,6 @@ public final class RegisteredValidatorParticle extends Particle implements Accou
 
 	@Override
 	public Set<RadixAddress> getAddresses() {
-		return ImmutableSet.of(address);
+		return Set.of(address);
 	}
 }

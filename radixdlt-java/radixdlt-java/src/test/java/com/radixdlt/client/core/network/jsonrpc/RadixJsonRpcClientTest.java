@@ -22,40 +22,38 @@
 
 package com.radixdlt.client.core.network.jsonrpc;
 
-import com.radixdlt.client.serialization.GsonJson;
-import com.radixdlt.client.serialization.Serialize;
-import io.reactivex.functions.Cancellable;
-import java.util.Collections;
-
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
 import org.junit.Test;
-import com.radixdlt.identifiers.EUID;
-import com.radixdlt.serialization.DsonOutput.Output;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.radixdlt.client.core.atoms.Atom;
+import com.radixdlt.client.serialization.GsonJson;
+import com.radixdlt.client.serialization.Serialize;
+import com.radixdlt.identifiers.EUID;
+import com.radixdlt.serialization.DsonOutput.Output;
+
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
+
+import io.reactivex.functions.Cancellable;
+import io.reactivex.observers.TestObserver;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import io.reactivex.observers.TestObserver;
-
 public class RadixJsonRpcClientTest {
 
 	@Test
 	public void getSelfTestError() {
-		PersistentChannel channel = mock(PersistentChannel.class);
+		var channel = mock(PersistentChannel.class);
 
 		when(channel.sendMessage(any())).thenReturn(false);
 
-		RadixJsonRpcClient jsonRpcClient = new RadixJsonRpcClient(channel);
-
-		TestObserver<NodeRunnerData> observer = new TestObserver<>();
+		var jsonRpcClient = new RadixJsonRpcClient(channel);
+		var observer = new TestObserver<NodeRunnerData>();
 
 		jsonRpcClient.getInfo().subscribe(observer);
 
@@ -65,34 +63,35 @@ public class RadixJsonRpcClientTest {
 
 	@Test
 	public void getAtomDoesNotExistTest() {
-		PersistentChannel channel = mock(PersistentChannel.class);
+		var channel = mock(PersistentChannel.class);
 
-		AtomicReference<Consumer<String>> listener = new AtomicReference<>();
+		var listener = new AtomicReference<Consumer<String>>();
+
 		doAnswer(a -> {
 			Consumer<String> l = a.getArgument(0);
 			listener.set(l);
 			return mock(Cancellable.class);
 		}).when(channel).addListener(any());
 
-		JsonParser parser = new JsonParser();
+		var parser = new JsonParser();
 
 		when(channel.sendMessage(any())).then(invocation -> {
-			String msg = (String) invocation.getArguments()[0];
-			JsonObject jsonObject = parser.parse(msg).getAsJsonObject();
-			String id = jsonObject.get("id").getAsString();
+			var msg = (String) invocation.getArguments()[0];
+			var jsonObject = parser.parse(msg).getAsJsonObject();
+			var id = jsonObject.get("id").getAsString();
 
-			JsonArray atoms = new JsonArray();
+			var atoms = new JsonArray();
 
-			JsonObject response = new JsonObject();
+			var response = new JsonObject();
 			response.addProperty("id", id);
 			response.add("result", atoms);
 
 			listener.get().accept(GsonJson.getInstance().stringFromGson(response));
 			return true;
 		});
-		RadixJsonRpcClient jsonRpcClient = new RadixJsonRpcClient(channel);
 
-		TestObserver<Atom> observer = new TestObserver<>();
+		var jsonRpcClient = new RadixJsonRpcClient(channel);
+		var observer = new TestObserver<Atom>();
 
 		jsonRpcClient.getAtom(new EUID(1)).subscribe(observer);
 
@@ -103,36 +102,37 @@ public class RadixJsonRpcClientTest {
 
 	@Test
 	public void getAtomTest() {
-		PersistentChannel channel = mock(PersistentChannel.class);
-		AtomicReference<Consumer<String>> listener = new AtomicReference<>();
+		var channel = mock(PersistentChannel.class);
+		var listener = new AtomicReference<Consumer<String>>();
+
 		doAnswer(a -> {
 			Consumer<String> l = a.getArgument(0);
 			listener.set(l);
 			return mock(Cancellable.class);
 		}).when(channel).addListener(any());
 
-		JsonParser parser = new JsonParser();
+		var parser = new JsonParser();
 
 		when(channel.sendMessage(any())).then(invocation -> {
-			String msg = (String) invocation.getArguments()[0];
-			JsonObject jsonObject = parser.parse(msg).getAsJsonObject();
-			String id = jsonObject.get("id").getAsString();
+			var msg = (String) invocation.getArguments()[0];
+			var jsonObject = parser.parse(msg).getAsJsonObject();
+			var id = jsonObject.get("id").getAsString();
 
-			JsonArray atoms = new JsonArray();
-			Atom atom = Atom.create(Collections.emptyList());
-			String atomJson = Serialize.getInstance().toJson(atom, Output.API);
+			var atoms = new JsonArray();
+			var atom = Atom.create();
+			var atomJson = Serialize.getInstance().toJson(atom, Output.API);
 			atoms.add(parser.parse(atomJson));
 
-			JsonObject response = new JsonObject();
+			var response = new JsonObject();
 			response.addProperty("id", id);
 			response.add("result", atoms);
 
 			listener.get().accept(GsonJson.getInstance().stringFromGson(response));
 			return true;
 		});
-		RadixJsonRpcClient jsonRpcClient = new RadixJsonRpcClient(channel);
 
-		TestObserver<Atom> observer = new TestObserver<>();
+		var jsonRpcClient = new RadixJsonRpcClient(channel);
+		var observer = new TestObserver<Atom>();
 
 		jsonRpcClient.getAtom(new EUID(1)).subscribe(observer);
 

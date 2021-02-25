@@ -24,8 +24,8 @@ package com.radixdlt.client.examples;
 
 import com.google.common.collect.ImmutableSet;
 import com.radixdlt.client.application.RadixApplicationAPI;
-import com.radixdlt.client.application.RadixApplicationAPI.Result;
-import com.radixdlt.client.application.RadixApplicationAPI.Transaction;
+import com.radixdlt.client.application.Result;
+import com.radixdlt.client.application.Transaction;
 import com.radixdlt.client.application.identity.RadixIdentities;
 import com.radixdlt.client.application.identity.RadixIdentity;
 import com.radixdlt.client.application.translate.tokens.CreateTokenAction;
@@ -33,6 +33,7 @@ import com.radixdlt.client.application.translate.tokens.CreateTokenAction.TokenS
 import com.radixdlt.client.application.translate.tokens.TokenUnitConversions;
 import com.radixdlt.client.core.Bootstrap;
 import com.radixdlt.identifiers.RRI;
+
 import java.math.BigDecimal;
 
 public class StakingExample {

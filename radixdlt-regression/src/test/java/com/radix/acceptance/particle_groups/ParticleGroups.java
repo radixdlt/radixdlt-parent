@@ -22,7 +22,7 @@ import com.google.common.collect.Lists;
 import com.radix.acceptance.SpecificProperties;
 import com.radix.test.utils.TokenUtilities;
 import com.radixdlt.client.application.RadixApplicationAPI;
-import com.radixdlt.client.application.RadixApplicationAPI.Transaction;
+import com.radixdlt.client.application.Transaction;
 import com.radixdlt.client.application.identity.RadixIdentities;
 import com.radixdlt.client.application.identity.RadixIdentity;
 import com.radixdlt.client.application.translate.Action;
@@ -35,30 +35,31 @@ import com.radixdlt.client.application.translate.tokens.TokenUnitConversions;
 import com.radixdlt.client.application.translate.tokens.TransferTokensAction;
 import com.radixdlt.client.application.translate.tokens.TransferTokensToParticleGroupsMapper;
 import com.radixdlt.client.application.translate.unique.PutUniqueIdAction;
-import com.radixdlt.crypto.ECKeyPair;
-import com.radixdlt.identifiers.RadixAddress;
 import com.radixdlt.client.core.RadixEnv;
 import com.radixdlt.client.core.atoms.AtomStatus;
 import com.radixdlt.client.core.atoms.ParticleGroup;
 import com.radixdlt.client.core.atoms.particles.Particle;
-import com.radixdlt.identifiers.RRI;
 import com.radixdlt.client.core.network.actions.SubmitAtomRequestAction;
-import com.radixdlt.client.core.network.actions.SubmitAtomStatusAction;
 import com.radixdlt.client.core.network.actions.SubmitAtomSendAction;
+import com.radixdlt.client.core.network.actions.SubmitAtomStatusAction;
+import com.radixdlt.crypto.ECKeyPair;
+import com.radixdlt.identifiers.RRI;
+import com.radixdlt.identifiers.RadixAddress;
 import com.radixdlt.utils.UInt256;
-import io.cucumber.java.en.And;
-import io.cucumber.java.en.Given;
-import io.cucumber.java.en.Then;
-import io.cucumber.java.en.When;
-import io.reactivex.observers.TestObserver;
-import java.util.Set;
-import java.util.stream.Stream;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import io.cucumber.java.en.And;
+import io.cucumber.java.en.Given;
+import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
+import io.reactivex.observers.TestObserver;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -94,10 +95,10 @@ public class ParticleGroups {
 	);
 	private final List<TestObserver<Object>> observers = Lists.newArrayList();
 
-	private class CreateEmptyGroupAction implements Action {
+	private static class CreateEmptyGroupAction implements Action {
 
 	}
-	private class CreateEmptyGroupActionToParticleGroupsMapper implements StatelessActionToParticleGroupsMapper<CreateEmptyGroupAction> {
+	private static class CreateEmptyGroupActionToParticleGroupsMapper implements StatelessActionToParticleGroupsMapper<CreateEmptyGroupAction> {
 
 		@Override
 		public List<ParticleGroup> mapToParticleGroups(CreateEmptyGroupAction action) {
@@ -105,19 +106,24 @@ public class ParticleGroups {
 		}
 	}
 
-	private class MergeAction implements Action {
+	private static class MergeAction implements Action {
 		private final Action[] actions;
 		private MergeAction(Action... actions) {
 			this.actions = actions;
 		}
 	}
 
-	private class MergeStatefulActionToParticleGroupsMapper<T extends Action> implements StatefulActionToParticleGroupsMapper<MergeAction> {
+	private static class MergeStatefulActionToParticleGroupsMapper<T extends Action>
+		implements StatefulActionToParticleGroupsMapper<MergeAction> {
+
 		private final StatefulActionToParticleGroupsMapper<T>[] mappers;
+
+		@SafeVarargs
 		private MergeStatefulActionToParticleGroupsMapper(StatefulActionToParticleGroupsMapper<T>... mappers) {
 			this.mappers = mappers;
 		}
 
+		@SuppressWarnings("unchecked")
 		@Override
 		public Set<ShardedParticleStateId> requiredState(MergeAction action) {
 			return Arrays.stream(mappers).flatMap(mapper ->
@@ -125,6 +131,7 @@ public class ParticleGroups {
 			).collect(Collectors.toSet());
 		}
 
+		@SuppressWarnings("unchecked")
 		@Override
 		public List<ParticleGroup> mapToParticleGroups(MergeAction mergeAction, Stream<Particle> store) {
 			List<Particle> particles = store.collect(Collectors.toList());

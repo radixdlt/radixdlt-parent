@@ -49,8 +49,8 @@ public class DiscoverNodesEpicTest {
 	@Test
 	public void when_seeds_return_an_error__epic_should_not_fail() {
 		Observable<RadixNode> seeds = Observable.error(new RuntimeException("BAD EXCEPTION!"));
-		RadixUniverseConfig universe = mock(RadixUniverseConfig.class);
-		DiscoverNodesEpic discoverNodesEpic = new DiscoverNodesEpic(seeds, universe);
+		var universe = mock(RadixUniverseConfig.class);
+		var discoverNodesEpic = DiscoverNodesEpic.create(seeds, universe);
 
 		ReplaySubject<RadixNodeAction> actions = ReplaySubject.create();
 		Observable<RadixNetworkState> networkState = Observable.just(mock(RadixNetworkState.class));
@@ -59,7 +59,7 @@ public class DiscoverNodesEpicTest {
 		TestObserver<RadixNodeAction> testObserver = TestObserver.create();
 		output.subscribe(testObserver);
 
-		actions.onNext(DiscoverMoreNodesAction.instance());
+		actions.onNext(DiscoverMoreNodesAction.create());
 		testObserver.assertNoErrors();
 		testObserver.awaitCount(1);
 		testObserver.assertValue(a -> a instanceof DiscoverMoreNodesErrorAction);
@@ -75,17 +75,17 @@ public class DiscoverNodesEpicTest {
 		ReplaySubject<RadixNodeAction> actions = ReplaySubject.create();
 		Observable<RadixNetworkState> networkState = Observable.just(mock(RadixNetworkState.class));
 
-		DiscoverNodesEpic discoverNodesEpic = new DiscoverNodesEpic(seeds, universe);
+		DiscoverNodesEpic discoverNodesEpic = DiscoverNodesEpic.create(seeds, universe);
 		Observable<RadixNodeAction> output = discoverNodesEpic.epic(actions, networkState);
 
 		TestObserver<RadixNodeAction> testObserver = TestObserver.create();
 		output.subscribe(testObserver);
 
-		actions.onNext(DiscoverMoreNodesAction.instance());
+		actions.onNext(DiscoverMoreNodesAction.create());
 
 		testObserver.awaitCount(1);
 		testObserver.assertValueAt(0, a -> a instanceof GetUniverseRequestAction);
-		actions.onNext(GetUniverseResponseAction.of(node, badUniverse));
+		actions.onNext(GetUniverseResponseAction.create(node, badUniverse));
 
 		testObserver.awaitCount(2);
 		testObserver.assertValueAt(1, a -> a instanceof NodeUniverseMismatch);
@@ -103,7 +103,7 @@ public class DiscoverNodesEpicTest {
 		when(networkState.getNodeStates()).thenReturn(Collections.emptyMap());
 		Observable<RadixNetworkState> observableNetworkState = Observable.concat(Observable.just(networkState), Observable.never());
 
-		DiscoverNodesEpic discoverNodesEpic = new DiscoverNodesEpic(seeds, universe);
+		DiscoverNodesEpic discoverNodesEpic = DiscoverNodesEpic.create(seeds, universe);
 		Observable<RadixNodeAction> output = discoverNodesEpic.epic(actions, observableNetworkState);
 		TestObserver<RadixNodeAction> testObserver = TestObserver.create();
 		output.subscribe(testObserver);
@@ -113,7 +113,7 @@ public class DiscoverNodesEpicTest {
 		NodeRunnerData data1 = mock(NodeRunnerData.class);
 		when(data1.getIp()).thenReturn("2.3.4.5");
 		List<NodeRunnerData> nodeRunnerData = Arrays.asList(data0, data1);
-		actions.onNext(GetLivePeersResultAction.of(node, nodeRunnerData));
+		actions.onNext(GetLivePeersResultAction.create(node, nodeRunnerData));
 
 		testObserver.awaitCount(2);
 		testObserver.assertValueAt(0, a -> a instanceof AddNodeAction);

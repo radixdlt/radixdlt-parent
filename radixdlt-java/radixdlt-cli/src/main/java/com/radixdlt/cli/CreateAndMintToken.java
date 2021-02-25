@@ -23,13 +23,15 @@
 package com.radixdlt.cli;
 
 import com.radixdlt.client.application.RadixApplicationAPI;
+import com.radixdlt.client.application.Transaction;
 import com.radixdlt.client.application.translate.tokens.CreateTokenAction;
 import com.radixdlt.client.application.translate.tokens.MintTokensAction;
 import com.radixdlt.client.application.translate.tokens.TokenUnitConversions;
 import com.radixdlt.identifiers.RRI;
-import picocli.CommandLine;
 
 import java.math.BigDecimal;
+
+import picocli.CommandLine;
 
 import static com.radixdlt.cli.Utils.printfln;
 import static com.radixdlt.cli.Utils.println;
@@ -84,7 +86,7 @@ public class CreateAndMintToken implements Runnable {
 
 		RadixApplicationAPI api = Utils.getAPI(identityInfo);
 		RRI tokenRRI = RRI.of(api.getAddress(), tokenName);
-		RadixApplicationAPI.Transaction transaction = api.createTransaction();
+		Transaction transaction = api.createTransaction();
 
 		if (!useExisting) {
 			printfln("Creating token %s with %s", tokenName, tokenDescription);

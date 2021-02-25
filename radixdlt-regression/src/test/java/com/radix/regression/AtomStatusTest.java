@@ -17,16 +17,19 @@
 
 package com.radix.regression;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
 import com.radix.test.utils.TokenUtilities;
 import com.radixdlt.client.application.RadixApplicationAPI;
-import com.radixdlt.client.application.RadixApplicationAPI.Transaction;
+import com.radixdlt.client.application.Transaction;
 import com.radixdlt.client.application.identity.RadixIdentities;
 import com.radixdlt.client.application.translate.unique.PutUniqueIdAction;
 import com.radixdlt.client.core.RadixEnv;
 import com.radixdlt.client.core.atoms.Atom;
 import com.radixdlt.client.core.atoms.AtomStatus;
 import com.radixdlt.client.core.atoms.AtomStatusEvent;
-import com.radixdlt.identifiers.RRI;
 import com.radixdlt.client.core.network.HttpClients;
 import com.radixdlt.client.core.network.RadixNode;
 import com.radixdlt.client.core.network.jsonrpc.RadixJsonRpcClient;
@@ -34,12 +37,12 @@ import com.radixdlt.client.core.network.jsonrpc.RadixJsonRpcClient.Notification;
 import com.radixdlt.client.core.network.jsonrpc.RadixJsonRpcClient.NotificationType;
 import com.radixdlt.client.core.network.websocket.WebSocketClient;
 import com.radixdlt.client.core.network.websocket.WebSocketStatus;
-import io.reactivex.observers.TestObserver;
-import java.util.UUID;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
 import com.radixdlt.identifiers.AID;
+import com.radixdlt.identifiers.RRI;
+
+import java.util.UUID;
+
+import io.reactivex.observers.TestObserver;
 
 public class AtomStatusTest {
 	private RadixJsonRpcClient rpcClient;

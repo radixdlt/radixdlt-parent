@@ -23,17 +23,16 @@
 package com.radixdlt.client.atommodel.rri;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableSet;
 import com.radixdlt.client.atommodel.Accountable;
-import com.radixdlt.identifiers.RadixAddress;
 import com.radixdlt.client.core.atoms.particles.Particle;
 import com.radixdlt.identifiers.EUID;
 import com.radixdlt.identifiers.RRI;
-import java.util.Collections;
-import java.util.Objects;
-import java.util.Set;
+import com.radixdlt.identifiers.RadixAddress;
 import com.radixdlt.serialization.DsonOutput;
 import com.radixdlt.serialization.SerializerId2;
+
+import java.util.Objects;
+import java.util.Set;
 
 @SerializerId2("radix.particles.rri")
 public final class RRIParticle extends Particle implements Accountable {
@@ -58,7 +57,7 @@ public final class RRIParticle extends Particle implements Accountable {
 
 	@Override
 	public Set<EUID> getDestinations() {
-		return ImmutableSet.of(this.rri.getAddress().euid());
+		return Set.of(this.rri.getAddress().euid());
 	}
 
 	public RRI getRRI() {
@@ -67,7 +66,7 @@ public final class RRIParticle extends Particle implements Accountable {
 
 	@Override
 	public Set<RadixAddress> getAddresses() {
-		return Collections.singleton(rri.getAddress());
+		return Set.of(rri.getAddress());
 	}
 
 	public long getNonce() {

@@ -31,9 +31,9 @@ public final class RRI {
 	private final RadixAddress address;
 	private final String name;
 
-	RRI(RadixAddress address, String name) {
-		this.address = Objects.requireNonNull(address);
-		this.name = Objects.requireNonNull(name);
+	private RRI(RadixAddress address, String name) {
+		this.address = address;
+		this.name = name;
 	}
 
 	public RadixAddress getAddress() {
@@ -45,25 +45,37 @@ public final class RRI {
 	}
 
 	public static RRI of(RadixAddress address, String name) {
+		Objects.requireNonNull(address);
+		Objects.requireNonNull(name);
+
 		return new RRI(address, name);
 	}
 
 	public static RRI from(String s) {
-		String[] split = s.split("/", 3);
-		if (split.length != 3 || split[0].length() != 0) {
-			throw new IllegalArgumentException(
-				"RRI does not have enough components and must be of the format /:address/:name (" + s + ")"
-			);
-		}
+		var split = s.split("/", 3);
 
-		RadixAddress address = RadixAddress.from(split[1]);
-		String name = split[2];
+		validateRRIFormat(s, split);
 
+		var address = RadixAddress.from(split[1]);
+		var name = split[2];
+
+		validateRRIName(s, name);
+
+		return of(address, name);
+	}
+
+	private static void validateRRIName(final String s, final String name) {
 		if (!NAME_PATTERN.matcher(name).matches()) {
 			throw new IllegalArgumentException("RRI name invalid, must match regex '" + NAME_REGEX + "': " + s);
 		}
+	}
 
-		return new RRI(address, name);
+	private static void validateRRIFormat(final String s, final String[] split) {
+		if (split.length == 3 && split[0].length() == 0) {
+			return;
+		}
+
+		throw new IllegalArgumentException("RRI must be of the format /:address/:name (" + s + ")");
 	}
 
 	@Override

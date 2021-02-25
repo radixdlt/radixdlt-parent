@@ -24,6 +24,7 @@ package com.radixdlt.client.core.network.actions;
 
 import com.radixdlt.client.core.atoms.Atom;
 import com.radixdlt.client.core.network.RadixNode;
+
 import java.util.Objects;
 import java.util.UUID;
 
@@ -36,15 +37,14 @@ public final class SubmitAtomRequestAction implements SubmitAtomAction, FindANod
 	private final boolean completeOnStoreOnly;
 
 	private SubmitAtomRequestAction(String uuid, Atom atom, boolean completeOnStoreOnly) {
-		Objects.requireNonNull(uuid);
-		Objects.requireNonNull(atom);
-
 		this.uuid = uuid;
 		this.atom = atom;
 		this.completeOnStoreOnly = completeOnStoreOnly;
 	}
 
-	public static SubmitAtomRequestAction newRequest(Atom atom, boolean completeOnStoreOnly) {
+	public static SubmitAtomRequestAction create(Atom atom, boolean completeOnStoreOnly) {
+		Objects.requireNonNull(atom);
+
 		return new SubmitAtomRequestAction(UUID.randomUUID().toString(), atom, completeOnStoreOnly);
 	}
 

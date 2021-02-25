@@ -25,6 +25,7 @@ package com.radixdlt.client.core.network.actions;
 import com.radixdlt.client.core.atoms.Atom;
 import com.radixdlt.client.core.atoms.AtomStatusEvent;
 import com.radixdlt.client.core.network.RadixNode;
+
 import java.util.Objects;
 
 /**
@@ -37,13 +38,18 @@ public final class SubmitAtomStatusAction implements SubmitAtomAction {
 	private final AtomStatusEvent statusNotification;
 
 	private SubmitAtomStatusAction(String uuid, Atom atom, RadixNode node, AtomStatusEvent statusNotification) {
-		this.uuid = Objects.requireNonNull(uuid);
-		this.atom = Objects.requireNonNull(atom);
-		this.node = Objects.requireNonNull(node);
-		this.statusNotification = Objects.requireNonNull(statusNotification);
+		this.uuid = uuid;
+		this.atom = atom;
+		this.node = node;
+		this.statusNotification = statusNotification;
 	}
 
-	public static SubmitAtomStatusAction fromStatusNotification(String uuid, Atom atom, RadixNode node, AtomStatusEvent statusNotification) {
+	public static SubmitAtomStatusAction create(String uuid, Atom atom, RadixNode node, AtomStatusEvent statusNotification) {
+		Objects.requireNonNull(uuid);
+		Objects.requireNonNull(atom);
+		Objects.requireNonNull(node);
+		Objects.requireNonNull(statusNotification);
+
 		return new SubmitAtomStatusAction(uuid, atom, node, statusNotification);
 	}
 

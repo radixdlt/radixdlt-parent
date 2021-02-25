@@ -58,7 +58,7 @@ public final class UnregisteredValidatorParticle extends Particle implements Acc
 
 	@Override
 	public Set<EUID> getDestinations() {
-		return ImmutableSet.of(this.address.euid());
+		return ImmutableSet.of(address.euid());
 	}
 
 	@Override
@@ -77,6 +77,6 @@ public final class UnregisteredValidatorParticle extends Particle implements Acc
 
 	@Override
 	public Set<RadixAddress> getAddresses() {
-		return ImmutableSet.of(address);
+		return Set.of(address);
 	}
 }

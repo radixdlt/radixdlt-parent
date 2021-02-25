@@ -23,13 +23,13 @@
 package com.radixdlt.client.examples;
 
 import com.radixdlt.client.application.RadixApplicationAPI;
-import com.radixdlt.client.application.RadixApplicationAPI.Result;
-import com.radixdlt.client.application.RadixApplicationAPI.Transaction;
+import com.radixdlt.client.application.Result;
+import com.radixdlt.client.application.Transaction;
 import com.radixdlt.client.application.identity.RadixIdentities;
 import com.radixdlt.client.application.identity.RadixIdentity;
 import com.radixdlt.client.application.translate.unique.PutUniqueIdAction;
-import com.radixdlt.identifiers.RRI;
 import com.radixdlt.client.core.Bootstrap;
+import com.radixdlt.identifiers.RRI;
 
 /**
  * Example showing how a message might be submitted to the ledger.

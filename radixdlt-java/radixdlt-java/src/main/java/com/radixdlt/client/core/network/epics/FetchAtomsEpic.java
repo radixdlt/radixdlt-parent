@@ -22,8 +22,6 @@
 
 package com.radixdlt.client.core.network.epics;
 
-import com.radixdlt.identifiers.RadixAddress;
-import com.radixdlt.client.core.ledger.AtomObservation;
 import com.radixdlt.client.core.network.RadixNetworkEpic;
 import com.radixdlt.client.core.network.RadixNetworkState;
 import com.radixdlt.client.core.network.RadixNode;
@@ -39,11 +37,13 @@ import com.radixdlt.client.core.network.jsonrpc.RadixJsonRpcClient;
 import com.radixdlt.client.core.network.jsonrpc.RadixJsonRpcClient.NotificationType;
 import com.radixdlt.client.core.network.websocket.WebSocketClient;
 import com.radixdlt.client.core.network.websocket.WebSocketStatus;
+
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.disposables.Disposable;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Epic which emits atoms on a FETCH_ATOMS_REQUEST query forever until a FETCH_ATOMS_CANCEL action occurs.
@@ -53,49 +53,53 @@ public final class FetchAtomsEpic implements RadixNetworkEpic {
 
 	private final WebSockets webSockets;
 
-	public FetchAtomsEpic(WebSockets webSockets) {
+	private FetchAtomsEpic(WebSockets webSockets) {
 		this.webSockets = webSockets;
 	}
 
+	public static FetchAtomsEpic create(WebSockets webSockets) {
+		return new FetchAtomsEpic(webSockets);
+	}
+
 	private Completable waitForConnection(RadixNode node) {
-		final WebSocketClient ws = webSockets.getOrCreate(node);
-		return ws.getState().doOnNext(s -> {
-			if (s.equals(WebSocketStatus.DISCONNECTED)) {
-				ws.connect();
-			}
-		})
-		.filter(s -> s.equals(WebSocketStatus.CONNECTED))
-		.firstOrError()
-		.ignoreElement();
+		final var ws = webSockets.getOrCreate(node);
+		return ws.getState().doOnNext(s -> connectIfDisconnected(ws, s))
+			.filter(s -> s.equals(WebSocketStatus.CONNECTED))
+			.firstOrError()
+			.ignoreElement();
+	}
+
+	private void connectIfDisconnected(final WebSocketClient ws, final WebSocketStatus s) {
+		if (s.equals(WebSocketStatus.DISCONNECTED)) {
+			ws.connect();
+		}
 	}
 
 	private Observable<RadixNodeAction> fetchAtoms(FetchAtomsRequestAction request, RadixNode node) {
-		final WebSocketClient ws = webSockets.getOrCreate(node);
-		final String uuid = request.getUuid();
-		final RadixAddress address = request.getAddress();
-		final RadixJsonRpcClient client = new RadixJsonRpcClient(ws);
+		var ws = webSockets.getOrCreate(node);
+		var uuid = request.getUuid();
+		var address = request.getAddress();
+		var client = new RadixJsonRpcClient(ws);
 
-		return client.observeAtoms(uuid)
-			.<RadixNodeAction>flatMap(n -> {
+		return client.observeAtoms(uuid).<RadixNodeAction>flatMap(n -> {
 				if (n.getType() == NotificationType.START) {
-					AtomQuery atomQuery = new AtomQuery(address);
-					return client.sendAtomsSubscribe(uuid, atomQuery).andThen(Observable.empty());
+					return client.sendAtomsSubscribe(uuid, AtomQuery.create(address)).andThen(Observable.empty());
 				} else {
-					AtomObservation observation = n.getEvent();
-					return Observable.just(FetchAtomsObservationAction.of(uuid, address, node, observation));
+					var observation = n.getEvent();
+					return Observable.just(FetchAtomsObservationAction.create(uuid, address, node, observation));
 				}
 			})
 			.doOnDispose(() ->
-				client.cancelAtomsSubscribe(uuid)
-					.andThen(
-						Observable.timer(DELAY_CLOSE_SECS, TimeUnit.SECONDS)
-							.flatMapCompletable(t -> {
-								ws.close();
-								return Completable.complete();
-							})
-					).subscribe()
+							 client.cancelAtomsSubscribe(uuid)
+								 .andThen(
+									 Observable.timer(DELAY_CLOSE_SECS, TimeUnit.SECONDS)
+										 .flatMapCompletable(t -> {
+											 ws.close();
+											 return Completable.complete();
+										 })
+								 ).subscribe()
 			)
-			.startWith(FetchAtomsSubscribeAction.of(uuid, address, node));
+			.startWith(FetchAtomsSubscribeAction.create(uuid, address, node));
 	}
 
 	@Override

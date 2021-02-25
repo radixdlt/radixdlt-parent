@@ -22,6 +22,9 @@
 
 package com.radixdlt.client.application.translate.unique;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.radixdlt.client.application.translate.ActionExecutionExceptionReason;
@@ -38,28 +41,31 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 public class AlreadyUsedUniqueIdReasonMapper implements AtomErrorToExceptionReasonMapper {
 
 	public static final Logger LOGGER = LogManager.getLogger(AlreadyUsedUniqueIdReasonMapper.class);
 
 	@Override
 	public Stream<ActionExecutionExceptionReason> mapAtomErrorToExceptionReasons(Atom atom, JsonObject errorData) {
-		if (errorData.has("pointerToIssue")) {
-			JsonElement pointerToIssueJson = errorData.get("pointerToIssue");
-			Optional<Pair<ParticleGroup, SpunParticle>> particleIssue = this.extractParticleFromPointerToIssue(atom, pointerToIssueJson);
+		if (!errorData.has("pointerToIssue")) {
+			return Stream.empty();
+		}
 
-			if (particleIssue.isPresent() && particleIssue.get().getSecond().getParticle() instanceof RRIParticle) {
-				RRIParticle rriParticle = (RRIParticle) particleIssue.get().getSecond().getParticle();
+		var particleIssue = this.extractParticleFromPointerToIssue(atom, errorData.get("pointerToIssue"));
 
-				return particleIssue.get().getFirst()
+		if (particleIssue.isPresent()) {
+			var pair = particleIssue.get();
+			var particle = pair.getSecond().getParticle();
+
+			if (particle instanceof RRIParticle) {
+				var rriParticle = (RRIParticle) particle;
+
+				return pair.getFirst()
 					.particles(Spin.UP)
 					.filter(UniqueParticle.class::isInstance)
 					.map(UniqueParticle.class::cast)
 					.filter(u -> u.getRRI().equals(rriParticle.getRRI()))
-					.map(p -> new AlreadyUsedUniqueIdReason(new UniqueId(p.getRRI().getAddress(), p.getName())));
+					.map(p -> new AlreadyUsedUniqueIdReason(UniqueId.create(p.getRRI().getAddress(), p.getName())));
 			}
 		}
 
@@ -69,23 +75,26 @@ public class AlreadyUsedUniqueIdReasonMapper implements AtomErrorToExceptionReas
 	/**
 	 * Extract the affected particle from pointerToIssue of an Atom
 	 *
-	 * @param atom               The atom the particle is in
+	 * @param atom The atom the particle is in
 	 * @param pointerToIssueJson The pointer to issue in Json form returned by the node
+	 *
 	 * @return The SpunParticle if it could be extracted
 	 */
 	private Optional<Pair<ParticleGroup, SpunParticle>> extractParticleFromPointerToIssue(Atom atom, JsonElement pointerToIssueJson) {
 		try {
-			String pointerToIssue = pointerToIssueJson.getAsString();
-			String groupIndexStr = pointerToIssue.split("/")[2];
-			String particleIndexStr = pointerToIssue.substring(pointerToIssue.lastIndexOf('/') + 1);
+			var pointerToIssue = pointerToIssueJson.getAsString();
+			var groupIndexStr = pointerToIssue.split("/")[2];
+			var particleIndexStr = pointerToIssue.substring(pointerToIssue.lastIndexOf('/') + 1);
 
 			int groupIndex = Integer.parseInt(groupIndexStr);
 			int particleIndex = Integer.parseInt(particleIndexStr);
 
-			ParticleGroup particleGroup = atom.particleGroups().collect(Collectors.toList()).get(groupIndex);
+			var particleGroup = atom.particleGroups().collect(Collectors.toList()).get(groupIndex);
 
-			return Optional.of(Pair.of(particleGroup,
-				particleGroup.spunParticles().collect(Collectors.toList()).get(particleIndex)));
+			return Optional.of(Pair.of(
+				particleGroup,
+				particleGroup.spunParticles().collect(Collectors.toList()).get(particleIndex)
+			));
 		} catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
 			LOGGER.error("Malformed pointerToIssue");
 

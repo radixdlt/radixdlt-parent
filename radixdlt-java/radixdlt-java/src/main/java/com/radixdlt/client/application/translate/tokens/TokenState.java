@@ -61,22 +61,29 @@ public class TokenState {
 	}
 
 	public static TokenState combine(TokenState state0, TokenState state1) {
-		final BigDecimal totalSupply;
-		if (state0.totalSupply != null) {
-			totalSupply = state1.totalSupply != null ? state0.totalSupply.add(state1.totalSupply) : state0.totalSupply;
-		} else {
-			totalSupply = state1.totalSupply;
+		return new TokenState(
+			coalesce(state0.name, state1.name),
+			coalesce(state0.iso, state1.iso),
+			coalesce(state0.description, state1.description),
+			coalesce(state0.iconUrl, state1.iconUrl),
+			calculateTotalSupply(state0, state1),
+			coalesce(state0.granularity, state1.granularity),
+			coalesce(state0.tokenSupplyType, state1.tokenSupplyType)
+		);
+	}
+
+	private static BigDecimal calculateTotalSupply(final TokenState state0, final TokenState state1) {
+		if (state0.totalSupply == null) {
+			return state1.totalSupply;
 		}
 
-		return new TokenState(
-			state0.name != null ? state0.name : state1.name,
-			state0.iso != null ? state0.iso : state1.iso,
-			state0.description != null ? state0.description : state1.description,
-			state0.iconUrl != null ? state0.iconUrl : state1.iconUrl,
-			totalSupply,
-			state0.granularity != null ? state0.granularity : state1.granularity,
-			state0.tokenSupplyType != null ? state0.tokenSupplyType : state1.tokenSupplyType
-		);
+		return state1.totalSupply != null
+			   ? state0.totalSupply.add(state1.totalSupply)
+			   : state0.totalSupply;
+	}
+
+	private static <T> T coalesce(final T v1, final T v2) {
+		return v1 != null ? v1 : v2;
 	}
 
 	public String getName() {
@@ -122,7 +129,7 @@ public class TokenState {
 			return false;
 		}
 
-		TokenState tokenState = (TokenState) o;
+		var tokenState = (TokenState) o;
 		return Objects.equals(this.name, tokenState.name)
 			&& Objects.equals(this.iso, tokenState.iso)
 			&& Objects.equals(this.tokenSupplyType, tokenState.tokenSupplyType)
@@ -134,7 +141,8 @@ public class TokenState {
 
 	@Override
 	public String toString() {
-		return String.format("Token(%s:%s) name(%s) description(%s) url(%s) totalSupply(%s) granularity(%s)",
+		return String.format(
+			"Token(%s:%s) name(%s) description(%s) url(%s) totalSupply(%s) granularity(%s)",
 			this.iso,
 			this.tokenSupplyType,
 			this.name,

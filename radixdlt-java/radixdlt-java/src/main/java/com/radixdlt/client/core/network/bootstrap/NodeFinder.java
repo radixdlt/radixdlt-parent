@@ -23,14 +23,17 @@
 package com.radixdlt.client.core.network.bootstrap;
 
 import com.radixdlt.client.core.network.RadixNode;
-import io.reactivex.Single;
+
 import java.io.IOException;
+import java.util.Objects;
+
+import io.reactivex.Single;
+import io.reactivex.SingleEmitter;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-import okhttp3.ResponseBody;
 
 /**
  * The node-finder is a service which allows one to bootstrap into a random node in the radix network.
@@ -41,42 +44,60 @@ public final class NodeFinder {
 	private final int port;
 	private final OkHttpClient client;
 
-	public NodeFinder(String url, int port) {
+	private NodeFinder(String url, int port) {
 		this.nodeFinderUrl = url;
 		this.port = port;
 		this.client = new OkHttpClient();
 	}
 
-	public Single<RadixNode> getSeed() {
-		return Single.<String>create(emitter -> {
-				Request request = new Request.Builder()
-					.url(this.nodeFinderUrl)
-					.build();
-				Call call = client.newCall(request);
-				emitter.setCancellable(call::cancel);
-				call.enqueue(new Callback() {
-					@Override
-					public void onFailure(Call call, IOException e) {
-						emitter.tryOnError(e);
-					}
+	public static NodeFinder create(String url, int port) {
+		Objects.requireNonNull(url);
 
-					@Override
-					public void onResponse(Call call, Response response) throws IOException {
-						ResponseBody body = response.body();
-						if (response.isSuccessful() && body != null) {
-							String bodyString = body.string();
-							body.close();
-							if (bodyString.isEmpty()) {
-								emitter.tryOnError(new IOException("Received empty peer."));
-							} else {
-								emitter.onSuccess(bodyString);
-							}
-						} else {
-							emitter.tryOnError(new IOException("Error retrieving peer: " + response.message()));
-						}
-					}
-				});
-			})
-			.map(peerUrl -> new RadixNode(peerUrl, true, port));
+		return new NodeFinder(url, port);
+	}
+
+	public Single<RadixNode> getSeed() {
+		return Single.create(this::buildRequest).map(peerUrl -> new RadixNode(peerUrl, true, port));
+	}
+
+	private void buildRequest(SingleEmitter<String> emitter) {
+		var request = new Request.Builder().url(this.nodeFinderUrl).build();
+		var call = client.newCall(request);
+
+		emitter.setCancellable(call::cancel);
+
+		call.enqueue(new NodeFinderCallback(emitter));
+	}
+
+	private static class NodeFinderCallback implements Callback {
+		private final SingleEmitter<String> emitter;
+
+		NodeFinderCallback(final SingleEmitter<String> emitter) {
+			this.emitter = emitter;
+		}
+
+		@Override
+		public void onFailure(Call call, IOException e) {
+			emitter.tryOnError(e);
+		}
+
+		@Override
+		public void onResponse(Call call, Response response) throws IOException {
+			var body = response.body();
+
+			if (!response.isSuccessful() || body == null) {
+				emitter.tryOnError(new IOException("Error retrieving peer: " + response.message()));
+				return;
+			}
+
+			var bodyString = body.string();
+			body.close();
+
+			if (bodyString.isEmpty()) {
+				emitter.tryOnError(new IOException("Received empty peer."));
+			} else {
+				emitter.onSuccess(bodyString);
+			}
+		}
 	}
 }

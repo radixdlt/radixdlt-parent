@@ -24,6 +24,7 @@ package com.radixdlt.client.application.translate.tokens;
 
 import com.radixdlt.client.application.translate.StageActionException;
 import com.radixdlt.identifiers.RRI;
+
 import java.math.BigDecimal;
 import java.util.Objects;
 
@@ -60,7 +61,7 @@ public final class TokenOverMintException extends StageActionException {
 			return false;
 		}
 
-		TokenOverMintException o = (TokenOverMintException) obj;
+		var o = (TokenOverMintException) obj;
 		return this.tokenDefinitionReference.equals(o.tokenDefinitionReference)
 			&& this.maxAmount.compareTo(o.maxAmount) == 0
 			&& this.currentAmount.compareTo(o.currentAmount) == 0

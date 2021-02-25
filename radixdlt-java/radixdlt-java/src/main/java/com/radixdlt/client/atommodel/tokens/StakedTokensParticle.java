@@ -23,8 +23,6 @@
 package com.radixdlt.client.atommodel.tokens;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.radixdlt.client.atommodel.Accountable;
 import com.radixdlt.client.atommodel.Ownable;
 import com.radixdlt.client.atommodel.tokens.MutableSupplyTokenDefinitionParticle.TokenTransition;
@@ -43,8 +41,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- *  A particle which represents an amount of staked fungible tokens
- *  owned by some key owner, stored in an account and staked to a delegate address.
+ * A particle which represents an amount of staked fungible tokens
+ * owned by some key owner, stored in an account and staked to a delegate address.
  */
 @SerializerId2("radix.particles.staked_tokens")
 public final class StakedTokensParticle extends Particle implements Accountable, Ownable {
@@ -75,7 +73,7 @@ public final class StakedTokensParticle extends Particle implements Accountable,
 	private Map<TokenTransition, TokenPermission> tokenPermissions;
 
 	protected StakedTokensParticle() {
-		this.tokenPermissions = ImmutableMap.of();
+		this.tokenPermissions = Map.of();
 	}
 
 	public StakedTokensParticle(
@@ -99,12 +97,12 @@ public final class StakedTokensParticle extends Particle implements Accountable,
 		this.granularity = granularity;
 		this.nonce = nonce;
 		this.amount = amount;
-		this.tokenPermissions = ImmutableMap.copyOf(tokenPermissions);
+		this.tokenPermissions = Map.copyOf(tokenPermissions);
 	}
 
 	@Override
 	public Set<EUID> getDestinations() {
-		return ImmutableSet.of(this.address.euid(), this.delegateAddress.euid());
+		return Set.of(this.address.euid(), this.delegateAddress.euid());
 	}
 
 	public Map<TokenTransition, TokenPermission> getTokenPermissions() {
@@ -120,20 +118,20 @@ public final class StakedTokensParticle extends Particle implements Accountable,
 
 	@JsonProperty("permissions")
 	private void setJsonPermissions(Map<String, String> permissions) {
-		if (permissions != null) {
-			this.tokenPermissions = permissions.entrySet().stream()
-				.collect(Collectors.toMap(
-					e -> TokenTransition.valueOf(e.getKey().toUpperCase()),
-					e -> TokenPermission.valueOf(e.getValue().toUpperCase())
-				));
-		} else {
+		if (permissions == null) {
 			throw new IllegalArgumentException("Permissions cannot be null.");
 		}
+
+		this.tokenPermissions = permissions.entrySet().stream()
+			.collect(Collectors.toMap(
+				e -> TokenTransition.valueOf(e.getKey().toUpperCase()),
+				e -> TokenPermission.valueOf(e.getValue().toUpperCase())
+			));
 	}
 
 	@Override
 	public Set<RadixAddress> getAddresses() {
-		return ImmutableSet.of(this.address, this.delegateAddress);
+		return Set.of(this.address, this.delegateAddress);
 	}
 
 	@Override
@@ -163,7 +161,9 @@ public final class StakedTokensParticle extends Particle implements Accountable,
 
 	@Override
 	public String toString() {
-		return String.format("%s[%s:%s:%s:%s:%s:%s]", getClass().getSimpleName(), tokenDefinitionReference, amount,
-			granularity, address, delegateAddress, nonce);
+		return String.format(
+			"%s[%s:%s:%s:%s:%s:%s]",
+			getClass().getSimpleName(), tokenDefinitionReference, amount, granularity, address, delegateAddress, nonce
+		);
 	}
 }

@@ -23,22 +23,21 @@
 package com.radixdlt.client.core.atoms.particles;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.HashSet;
-import java.util.Set;
-
 import com.google.common.hash.HashCode;
-import com.radixdlt.client.serialization.Serialize;
-import com.radixdlt.identifiers.EUID;
-import com.radixdlt.serialization.DsonOutput;
 import com.radixdlt.client.atommodel.Accountable;
 import com.radixdlt.client.atommodel.Identifiable;
+import com.radixdlt.client.serialization.Serialize;
 import com.radixdlt.crypto.HashUtils;
+import com.radixdlt.identifiers.EUID;
 import com.radixdlt.identifiers.RadixAddress;
-
+import com.radixdlt.serialization.DsonOutput;
 import com.radixdlt.serialization.DsonOutput.Output;
 import com.radixdlt.serialization.SerializerConstants;
 import com.radixdlt.serialization.SerializerDummy;
 import com.radixdlt.serialization.SerializerId2;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * A logical action on the ledger
@@ -56,16 +55,14 @@ public abstract class Particle {
 	}
 
 	public final Set<RadixAddress> getShardables() {
-		Set<RadixAddress> addresses = new HashSet<>();
+		var addresses = new HashSet<RadixAddress>();
 
 		if (this instanceof Accountable) {
-			Accountable a = (Accountable) this;
-			addresses.addAll(a.getAddresses());
+			addresses.addAll(((Accountable) this).getAddresses());
 		}
 
 		if (this instanceof Identifiable) {
-			Identifiable i = (Identifiable) this;
-			addresses.add(i.getRRI().getAddress());
+			addresses.add(((Identifiable) this).getRRI().getAddress());
 		}
 
 		return new HashSet<>(addresses);
@@ -91,7 +88,7 @@ public abstract class Particle {
 			return false;
 		}
 
-		Particle particle = (Particle) o;
+		var particle = (Particle) o;
 		return this.getHash().equals(particle.getHash());
 	}
 

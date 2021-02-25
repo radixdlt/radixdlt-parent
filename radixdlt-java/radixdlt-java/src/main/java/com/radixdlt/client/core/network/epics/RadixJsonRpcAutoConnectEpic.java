@@ -27,8 +27,8 @@ import com.radixdlt.client.core.network.RadixNetworkState;
 import com.radixdlt.client.core.network.RadixNodeAction;
 import com.radixdlt.client.core.network.WebSockets;
 import com.radixdlt.client.core.network.actions.JsonRpcMethodAction;
-import com.radixdlt.client.core.network.websocket.WebSocketClient;
 import com.radixdlt.client.core.network.websocket.WebSocketStatus;
+
 import io.reactivex.Observable;
 
 /**
@@ -47,7 +47,7 @@ public final class RadixJsonRpcAutoConnectEpic implements RadixNetworkEpic {
 			actions
 				.filter(a -> a instanceof JsonRpcMethodAction)
 				.flatMap(a -> {
-					final WebSocketClient ws = webSockets.getOrCreate(a.getNode());
+					final var ws = webSockets.getOrCreate(a.getNode());
 					return ws.getState()
 						.doOnNext(s -> {
 							if (s.equals(WebSocketStatus.DISCONNECTED)) {

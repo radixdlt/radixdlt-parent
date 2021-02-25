@@ -31,13 +31,13 @@ import com.radixdlt.identifiers.RRI;
 public class UnknownTokenException extends StageActionException {
 	private final RRI tokenDefinitionReference;
 
-    /**
-     * Constructs a new unknown token exception with the specified token class reference.
-     *
-     * @param tokenDefinitionReference the token class that could not be found.
-     *     Note that {@link #getMessage()} will include the token class name
-     *     in the exception detail message.
-     */
+	/**
+	 * Constructs a new unknown token exception with the specified token class reference.
+	 *
+	 * @param tokenDefinitionReference the token class that could not be found.
+	 * 	Note that {@link #getMessage()} will include the token class name
+	 * 	in the exception detail message.
+	 */
 	public UnknownTokenException(RRI tokenDefinitionReference) {
 		super("Unknown token: " + tokenDefinitionReference);
 		this.tokenDefinitionReference = tokenDefinitionReference;
@@ -50,7 +50,7 @@ public class UnknownTokenException extends StageActionException {
 		}
 
 		if (obj instanceof UnknownTokenException) {
-			UnknownTokenException o = (UnknownTokenException) obj;
+			var o = (UnknownTokenException) obj;
 			return this.tokenDefinitionReference.equals(o.tokenDefinitionReference);
 		}
 

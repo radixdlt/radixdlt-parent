@@ -23,6 +23,7 @@
 package com.radixdlt.client.application.translate.unique;
 
 import com.radixdlt.client.application.translate.ActionExecutionExceptionReason;
+
 import java.util.Objects;
 
 public class AlreadyUsedUniqueIdReason extends ActionExecutionExceptionReason {
@@ -45,7 +46,7 @@ public class AlreadyUsedUniqueIdReason extends ActionExecutionExceptionReason {
 			return false;
 		}
 
-		AlreadyUsedUniqueIdReason alreadyUsedUniqueIdReason = (AlreadyUsedUniqueIdReason) o;
+		var alreadyUsedUniqueIdReason = (AlreadyUsedUniqueIdReason) o;
 		return alreadyUsedUniqueIdReason.uniqueId.equals(this.uniqueId);
 	}
 }

@@ -63,7 +63,7 @@ public class FindANodeEpicTest {
 
 		FindANodeRequestAction request = mock(FindANodeRequestAction.class);
 
-		FindANodeEpic findANodeFunction = new FindANodeEpic(new GetFirstSelector());
+		FindANodeEpic findANodeFunction = FindANodeEpic.create(GetFirstSelector.create());
 		TestObserver<RadixNodeAction> testObserver = TestObserver.create();
 		findANodeFunction.epic(
 			Observable.<RadixNodeAction>just(request).concatWith(Observable.never()),
@@ -78,7 +78,7 @@ public class FindANodeEpicTest {
 	@Test
 	public void disconnectedNodeConnectionTest() {
 		RadixNode node = mock(RadixNode.class);
-		FindANodeEpic findANodeEpic = new FindANodeEpic(new RandomSelector());
+		FindANodeEpic findANodeEpic = FindANodeEpic.create(RandomSelector.create());
 
 		RadixNodeState nodeState = mock(RadixNodeState.class);
 		when(nodeState.getStatus()).thenReturn(WebSocketStatus.DISCONNECTED);
@@ -116,7 +116,7 @@ public class FindANodeEpicTest {
 
 		FindANodeRequestAction request = mock(FindANodeRequestAction.class);
 
-		FindANodeEpic findANodeFunction = new FindANodeEpic(new GetFirstSelector());
+		var findANodeFunction = FindANodeEpic.create(GetFirstSelector.create());
 		TestObserver<RadixNodeAction> testObserver = TestObserver.create();
 		findANodeFunction.epic(
 			Observable.<RadixNodeAction>just(request).concatWith(Observable.never()),
@@ -141,7 +141,7 @@ public class FindANodeEpicTest {
 			goodPeer, mockedNodeState(WebSocketStatus.DISCONNECTED)
 		)));
 
-		FindANodeEpic findANodeEpic = new FindANodeEpic(new GetFirstSelector());
+		FindANodeEpic findANodeEpic = FindANodeEpic.create(GetFirstSelector.create());
 		TestObserver<RadixNodeAction> testObserver = TestObserver.create();
 
 		FindANodeRequestAction request = mock(FindANodeRequestAction.class);
@@ -185,7 +185,7 @@ public class FindANodeEpicTest {
 			goodPeer, mockedNodeState(WebSocketStatus.DISCONNECTED)
 		)));
 
-		FindANodeEpic findANodeEpic = new FindANodeEpic(new GetFirstSelector());
+		var findANodeEpic = FindANodeEpic.create(GetFirstSelector.create());
 		TestObserver<RadixNodeAction> testObserver = TestObserver.create();
 
 		FindANodeRequestAction request = mock(FindANodeRequestAction.class);

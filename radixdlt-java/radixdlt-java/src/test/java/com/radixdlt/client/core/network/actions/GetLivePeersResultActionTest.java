@@ -35,7 +35,7 @@ import org.junit.Test;
 public class GetLivePeersResultActionTest {
 	@Test
 	public void when_list_from_result_is_modified__then_exception_is_thrown() {
-		GetLivePeersResultAction action = GetLivePeersResultAction.of(mock(RadixNode.class), new ArrayList<>());
+		GetLivePeersResultAction action = GetLivePeersResultAction.create(mock(RadixNode.class), new ArrayList<>());
 		List<NodeRunnerData> result = action.getResult();
 		assertThatThrownBy(() -> result.add(mock(NodeRunnerData.class)))
 			.isInstanceOf(UnsupportedOperationException.class);
@@ -44,7 +44,7 @@ public class GetLivePeersResultActionTest {
 	@Test
 	public void when_initial_empty_list_for_action_is_modified__then_list_of_data_from_action_should_remain_empty() {
 		List<NodeRunnerData> initialList = new ArrayList<>();
-		GetLivePeersResultAction action = GetLivePeersResultAction.of(mock(RadixNode.class), initialList);
+		GetLivePeersResultAction action = GetLivePeersResultAction.create(mock(RadixNode.class), initialList);
 		initialList.add(mock(NodeRunnerData.class));
 		assertThat(action.getResult()).isEmpty();
 	}

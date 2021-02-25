@@ -33,28 +33,28 @@ import org.junit.Test;
 public class FetchAtomsObservationActionTest {
 	@Test
 	public void when_initializing_with_null__npe_should_be_thrown() {
-		assertThatThrownBy(() -> FetchAtomsObservationAction.of(
+		assertThatThrownBy(() -> FetchAtomsObservationAction.create(
 			null,
 			mock(RadixAddress.class),
 			mock(RadixNode.class),
 			mock(AtomObservation.class)
 		)).isInstanceOf(NullPointerException.class);
 
-		assertThatThrownBy(() -> FetchAtomsObservationAction.of(
+		assertThatThrownBy(() -> FetchAtomsObservationAction.create(
 			"Hi",
 			null,
 			mock(RadixNode.class),
 			mock(AtomObservation.class)
 		)).isInstanceOf(NullPointerException.class);
 
-		assertThatThrownBy(() -> FetchAtomsObservationAction.of(
+		assertThatThrownBy(() -> FetchAtomsObservationAction.create(
 			"Hi",
 			mock(RadixAddress.class),
 			null,
 			mock(AtomObservation.class)
 		)).isInstanceOf(NullPointerException.class);
 
-		assertThatThrownBy(() -> FetchAtomsObservationAction.of(
+		assertThatThrownBy(() -> FetchAtomsObservationAction.create(
 			"Hi",
 			mock(RadixAddress.class),
 			mock(RadixNode.class),

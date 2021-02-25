@@ -42,10 +42,14 @@ public enum Spin {
 	@JsonCreator
 	public static Spin valueOf(int intValue) {
 		switch (intValue) {
-			case 1: return UP;
-			case 0: return NEUTRAL;
-			case -1: return DOWN;
-			default: throw new IllegalArgumentException("No spin type of value: " + intValue);
+			case 1:
+				return UP;
+			case 0:
+				return NEUTRAL;
+			case -1:
+				return DOWN;
+			default:
+				throw new IllegalArgumentException("No spin type of value: " + intValue);
 		}
 	}
 }

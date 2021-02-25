@@ -320,9 +320,9 @@ public class RadixJsonRpcClient {
 			"Atoms.nextStatusEvent",
 			subscriberId,
 			json -> {
-				AtomStatus atomStatus = AtomStatus.valueOf(json.get("status").getAsString());
-				JsonObject data = json.get("data").getAsJsonObject();
-				AtomStatusEvent atomStatusEvent = new AtomStatusEvent(atomStatus, data);
+				var atomStatus = AtomStatus.valueOf(json.get("status").getAsString());
+				var data = json.get("data").getAsJsonObject();
+				var atomStatusEvent = AtomStatusEvent.create(atomStatus, data);
 				return Stream.of(atomStatusEvent);
 			}
 		);

@@ -17,9 +17,6 @@
 
 package com.radixdlt.fees;
 
-import java.util.Objects;
-import java.util.Set;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.radixdlt.client.core.atoms.Atom;
@@ -30,6 +27,10 @@ import com.radixdlt.client.serialization.Serialize;
 import com.radixdlt.serialization.DsonOutput;
 import com.radixdlt.utils.UInt256;
 import com.radixdlt.utils.UInt384;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * Schedule of fees.
@@ -43,8 +44,8 @@ public final class FeeTable {
 		this.feeEntries = Objects.requireNonNull(feeEntries);
 	}
 
-	public static FeeTable from(UInt256 minimumFee, ImmutableList<FeeEntry> feeEntries) {
-		return new FeeTable(minimumFee, feeEntries);
+	public static FeeTable from(UInt256 minimumFee, List<FeeEntry> feeEntries) {
+		return new FeeTable(minimumFee, ImmutableList.copyOf(feeEntries));
 	}
 
 	public UInt256 minimumFee() {

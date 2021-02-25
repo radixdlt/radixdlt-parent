@@ -25,6 +25,7 @@ package com.radixdlt.client.core.network.actions;
 import com.radixdlt.client.core.atoms.Atom;
 import com.radixdlt.client.core.network.RadixNode;
 import com.radixdlt.client.core.network.RadixNodeAction;
+
 import java.util.Objects;
 
 /**
@@ -37,17 +38,17 @@ public final class SubmitAtomSendAction implements SubmitAtomAction, RadixNodeAc
 	private final boolean completeOnStoreOnly;
 
 	private SubmitAtomSendAction(String uuid, Atom atom, RadixNode node, boolean completeOnStoreOnly) {
-		Objects.requireNonNull(uuid);
-		Objects.requireNonNull(atom);
-		Objects.requireNonNull(node);
-
 		this.uuid = uuid;
 		this.atom = atom;
 		this.node = node;
 		this.completeOnStoreOnly = completeOnStoreOnly;
 	}
 
-	public static SubmitAtomSendAction of(String uuid, Atom atom, RadixNode node, boolean completeOnStoreOnly) {
+	public static SubmitAtomSendAction create(String uuid, Atom atom, RadixNode node, boolean completeOnStoreOnly) {
+		Objects.requireNonNull(uuid);
+		Objects.requireNonNull(atom);
+		Objects.requireNonNull(node);
+
 		return new SubmitAtomSendAction(uuid, atom, node, completeOnStoreOnly);
 	}
 

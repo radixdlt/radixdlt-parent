@@ -27,6 +27,7 @@ import com.radixdlt.identifiers.RRI;
 import com.radixdlt.identifiers.RadixAddress;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
 /**
  * An action for staking tokens from an address to a certain delegate
@@ -37,34 +38,24 @@ public class StakeTokensAction implements Action {
 	private final RRI rri;
 	private final BigDecimal amount;
 
-	private StakeTokensAction(
-		BigDecimal amount,
-		RRI rri,
-		RadixAddress from,
-		RadixAddress delegate
-	) {
-		if (amount.stripTrailingZeros().scale() > TokenUnitConversions.getTokenScale()) {
-			throw new IllegalArgumentException("Amount must scale by " + TokenUnitConversions.getTokenScale());
-		}
-
+	private StakeTokensAction(BigDecimal amount, RRI rri, RadixAddress from, RadixAddress delegate) {
 		this.from = from;
 		this.delegate = delegate;
 		this.rri = rri;
 		this.amount = amount;
 	}
 
-	public static StakeTokensAction create(
-		BigDecimal amount,
-		RRI rri,
-		RadixAddress from,
-		RadixAddress delegate
-	) {
-		return new StakeTokensAction(
-			amount,
-			rri,
-			from,
-			delegate
-		);
+	public static StakeTokensAction create(BigDecimal amount, RRI rri, RadixAddress from, RadixAddress delegate) {
+		Objects.requireNonNull(amount);
+		Objects.requireNonNull(rri);
+		Objects.requireNonNull(from);
+		Objects.requireNonNull(delegate);
+
+		if (amount.stripTrailingZeros().scale() > TokenUnitConversions.getTokenScale()) {
+			throw new IllegalArgumentException("Amount must scale by " + TokenUnitConversions.getTokenScale());
+		}
+
+		return new StakeTokensAction(amount, rri, from, delegate);
 	}
 
 	public RadixAddress getFrom() {

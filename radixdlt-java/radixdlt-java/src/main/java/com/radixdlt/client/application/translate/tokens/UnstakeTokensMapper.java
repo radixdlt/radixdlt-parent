@@ -44,6 +44,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.radixdlt.client.application.translate.tokens.TokenUnitConversions.unitsToSubunits;
+
 /**
  * Maps an unstake tokens action to the particles necessary to be included in an atom.
  */
@@ -55,7 +57,7 @@ public class UnstakeTokensMapper implements StatefulActionToParticleGroupsMapper
 	private static List<SpunParticle> mapToParticles(UnstakeTokensAction unstake, List<StakedTokensParticle> currentParticles)
 		throws NotEnoughFungiblesException {
 
-		final UInt256 totalAmountToRedelegate = TokenUnitConversions.unitsToSubunits(unstake.getAmount());
+		final UInt256 totalAmountToRedelegate = unitsToSubunits(unstake.getAmount());
 		if (currentParticles.isEmpty()) {
 			throw new NotEnoughFungiblesException(totalAmountToRedelegate, UInt256.ZERO);
 		}

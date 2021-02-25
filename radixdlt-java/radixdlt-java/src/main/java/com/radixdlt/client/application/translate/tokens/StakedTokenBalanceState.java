@@ -22,7 +22,6 @@
 
 package com.radixdlt.client.application.translate.tokens;
 
-import com.google.common.collect.ImmutableMap;
 import com.radixdlt.client.application.translate.ApplicationState;
 import com.radixdlt.client.atommodel.tokens.StakedTokensParticle;
 import com.radixdlt.identifiers.RRI;
@@ -37,14 +36,14 @@ import java.util.Map;
  * The tokens staked to an address at a given point in time.
  */
 public class StakedTokenBalanceState implements ApplicationState {
-	private final ImmutableMap<Pair<RadixAddress, RRI>, BigDecimal> balance;
+	private final Map<Pair<RadixAddress, RRI>, BigDecimal> balance;
 
 	public StakedTokenBalanceState() {
-		this.balance = ImmutableMap.of();
+		this.balance = Map.of();
 	}
 
 	private StakedTokenBalanceState(Map<Pair<RadixAddress, RRI>, BigDecimal> balance) {
-		this.balance = ImmutableMap.copyOf(balance);
+		this.balance = Map.copyOf(balance);
 	}
 
 	public Map<Pair<RadixAddress, RRI>, BigDecimal> getBalance() {
@@ -69,7 +68,9 @@ public class StakedTokenBalanceState implements ApplicationState {
 		final var balance = new HashMap<>(state.balance);
 		final var key = Pair.of(particle.getDelegateAddress(), particle.getTokenDefinitionReference());
 		final var amount = TokenUnitConversions.subunitsToUnits(particle.getAmount());
+
 		balance.merge(key, amount, BigDecimal::add);
+
 		return new StakedTokenBalanceState(balance);
 	}
 

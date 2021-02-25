@@ -18,49 +18,49 @@
 package com.radix.acceptance.mint_multi_issuance_tokens;
 
 import com.google.common.collect.ImmutableSet;
-import com.radixdlt.client.application.RadixApplicationAPI.Transaction;
-import com.radixdlt.client.application.translate.StageActionException;
-import com.radixdlt.client.application.translate.tokens.TokenOverMintException;
-import com.radixdlt.client.application.translate.tokens.TokenUnitConversions;
-import com.radixdlt.client.core.RadixEnv;
-import com.radixdlt.client.core.atoms.AtomStatus;
-import com.radixdlt.identifiers.RRI;
-import com.radixdlt.client.core.network.RadixNetworkState;
-import com.radixdlt.client.core.network.RadixNode;
-import com.radixdlt.client.core.network.actions.SubmitAtomAction;
-import com.radixdlt.client.core.network.actions.SubmitAtomStatusAction;
-import com.radixdlt.client.core.network.actions.SubmitAtomSendAction;
-import io.cucumber.java.After;
-import io.reactivex.disposables.Disposable;
-import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.List;
-
-import java.util.concurrent.TimeUnit;
-import com.radixdlt.utils.UInt256;
-
 import com.google.common.collect.Lists;
 import com.radix.acceptance.SpecificProperties;
 import com.radix.test.utils.TokenUtilities;
 import com.radixdlt.client.application.RadixApplicationAPI;
+import com.radixdlt.client.application.Transaction;
 import com.radixdlt.client.application.identity.RadixIdentities;
 import com.radixdlt.client.application.identity.RadixIdentity;
+import com.radixdlt.client.application.translate.StageActionException;
 import com.radixdlt.client.application.translate.tokens.CreateTokenAction;
 import com.radixdlt.client.application.translate.tokens.CreateTokenAction.TokenSupplyType;
 import com.radixdlt.client.application.translate.tokens.MintTokensAction;
 import com.radixdlt.client.application.translate.tokens.TokenDefinitionsState;
+import com.radixdlt.client.application.translate.tokens.TokenOverMintException;
+import com.radixdlt.client.application.translate.tokens.TokenUnitConversions;
 import com.radixdlt.client.application.translate.tokens.UnknownTokenException;
+import com.radixdlt.client.core.RadixEnv;
+import com.radixdlt.client.core.atoms.AtomStatus;
+import com.radixdlt.client.core.network.RadixNetworkState;
+import com.radixdlt.client.core.network.RadixNode;
+import com.radixdlt.client.core.network.actions.SubmitAtomAction;
+import com.radixdlt.client.core.network.actions.SubmitAtomSendAction;
+import com.radixdlt.client.core.network.actions.SubmitAtomStatusAction;
+import com.radixdlt.identifiers.RRI;
 import com.radixdlt.identifiers.RadixAddress;
+import com.radixdlt.utils.UInt256;
 
-import static com.radixdlt.client.core.atoms.AtomStatus.EVICTED_FAILED_CM_VERIFICATION;
+import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import io.cucumber.java.After;
+import io.cucumber.java.en.Given;
+import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.observers.TestObserver;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
-import io.cucumber.java.en.Given;
-import io.cucumber.java.en.Then;
-import io.cucumber.java.en.When;
-import io.reactivex.observers.TestObserver;
+import static com.radixdlt.client.core.atoms.AtomStatus.EVICTED_FAILED_CM_VERIFICATION;
 
 /**
  * See <a href="https://radixdlt.atlassian.net/browse/RLAU-94">RLAU-94</a>.

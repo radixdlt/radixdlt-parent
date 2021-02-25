@@ -34,12 +34,12 @@ import com.radixdlt.crypto.ECDSASignature;
 import com.radixdlt.crypto.HashUtils;
 import com.radixdlt.identifiers.AID;
 import com.radixdlt.identifiers.EUID;
+import com.radixdlt.identifiers.RadixAddress;
 import com.radixdlt.serialization.DsonOutput;
 import com.radixdlt.serialization.SerializerConstants;
 import com.radixdlt.serialization.SerializerDummy;
 import com.radixdlt.serialization.SerializerId2;
 
-import com.radixdlt.identifiers.RadixAddress;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -55,28 +55,20 @@ import java.util.stream.Stream;
 @SerializerId2("radix.atom")
 public final class Atom {
 
+	public static Atom create() {
+		return create(List.of(), null);
+	}
+
 	public static Atom create(ParticleGroup particleGroup) {
-		return new Atom(
-			ImmutableList.of(particleGroup),
-			null,
-			ImmutableMap.of()
-		);
+		return create(List.of(particleGroup), null);
 	}
 
 	public static Atom create(List<ParticleGroup> particleGroups) {
-		return new Atom(
-			ImmutableList.copyOf(particleGroups),
-			null,
-			ImmutableMap.of()
-		);
+		return create(particleGroups, null);
 	}
 
 	public static Atom create(List<ParticleGroup> particleGroups, String message) {
-		return new Atom(
-			ImmutableList.copyOf(particleGroups),
-			message,
-			ImmutableMap.of()
-		);
+		return new Atom(ImmutableList.copyOf(particleGroups), message, ImmutableMap.of());
 	}
 
 	@JsonProperty("particleGroups")
@@ -119,31 +111,29 @@ public final class Atom {
 	// TODO: refactor to utilize an AtomBuilder
 	public Atom addSignature(EUID signatureId, ECDSASignature signature) {
 		ImmutableMap.Builder<String, ECDSASignature> builder = ImmutableMap.builder();
+
 		signatures.forEach((id, sig) -> {
 			if (!id.equals(signatureId.toString())) {
 				builder.put(id, sig);
 			}
 		});
+
 		builder.put(signatureId.toString(), signature);
 
-		return new Atom(
-			this.particleGroups,
-			this.message,
-			builder.build()
-		);
+		return new Atom(this.particleGroups, this.message, builder.build());
 	}
 
 
 	public Stream<ParticleGroup> particleGroups() {
-		return this.particleGroups.stream();
+		return particleGroups.stream();
 	}
 
 	public Stream<SpunParticle> spunParticles() {
-		return this.particleGroups.stream().flatMap(ParticleGroup::spunParticles);
+		return particleGroups.stream().flatMap(ParticleGroup::spunParticles);
 	}
 
 	public Stream<Particle> particles(Spin spin) {
-		return this.spunParticles().filter(s -> s.getSpin() == spin).map(SpunParticle::getParticle);
+		return spunParticles().filter(s -> s.getSpin() == spin).map(SpunParticle::getParticle);
 	}
 
 	public Stream<RadixAddress> addresses() {
@@ -159,7 +149,7 @@ public final class Atom {
 	}
 
 	public Optional<ECDSASignature> getSignature(EUID uid) {
-		return Optional.ofNullable(this.signatures).map(sigs -> sigs.get(uid.toString()));
+		return Optional.ofNullable(signatures).map(signatures -> signatures.get(uid.toString()));
 	}
 
 	public byte[] toDson() {
@@ -180,12 +170,12 @@ public final class Atom {
 	 * @return the message, or {@code null} if no message
 	 */
 	public String getMessage() {
-		return this.message;
+		return message;
 	}
 
 	@Override
 	public int hashCode() {
-		return this.getHash().hashCode();
+		return getHash().hashCode();
 	}
 
 	@Override
@@ -194,13 +184,13 @@ public final class Atom {
 			return false;
 		}
 
-		Atom atom = (Atom) o;
+		var atom = (Atom) o;
 		return this.getHash().equals(atom.getHash());
 	}
 
 	@Override
 	public String toString() {
-		String particleGroupsStr = this.particleGroups.stream().map(ParticleGroup::toString).collect(Collectors.joining(","));
+		var particleGroupsStr = particleGroups.stream().map(ParticleGroup::toString).collect(Collectors.joining(","));
 		return String.format("%s[%s:%s]", getClass().getSimpleName(), getAid(), particleGroupsStr);
 	}
 }

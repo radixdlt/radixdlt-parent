@@ -33,6 +33,13 @@ import java.util.Random;
 public class RandomSelector implements RadixPeerSelector {
 	private Random rng = new Random();
 
+	private RandomSelector() {
+	}
+
+	public static RadixPeerSelector create() {
+		return new RandomSelector();
+	}
+
 	@Override
 	public RadixNode apply(List<RadixNode> radixNodes) {
 		return radixNodes.get(rng.nextInt(radixNodes.size()));

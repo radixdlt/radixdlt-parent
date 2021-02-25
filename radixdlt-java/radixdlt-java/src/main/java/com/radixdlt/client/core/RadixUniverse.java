@@ -22,28 +22,20 @@
 
 package com.radixdlt.client.core;
 
-import com.radixdlt.identifiers.RadixAddress;
-import com.radixdlt.utils.UInt256;
 import com.google.common.collect.ImmutableList;
 import com.radixdlt.client.application.translate.tokens.TokenUnitConversions;
 import com.radixdlt.client.atommodel.tokens.FixedSupplyTokenDefinitionParticle;
 import com.radixdlt.client.atommodel.tokens.MutableSupplyTokenDefinitionParticle;
 import com.radixdlt.client.core.address.RadixUniverseConfig;
-import com.radixdlt.identifiers.RRI;
-import com.radixdlt.client.core.ledger.AtomObservation;
+import com.radixdlt.client.core.atoms.Atom;
 import com.radixdlt.client.core.atoms.particles.Spin;
-import com.radixdlt.crypto.ECPublicKey;
-import com.radixdlt.fees.FeeEntry;
-import com.radixdlt.fees.FeeTable;
-import com.radixdlt.fees.PerBytesFeeEntry;
-import com.radixdlt.fees.PerParticleFeeEntry;
+import com.radixdlt.client.core.ledger.AtomObservation;
 import com.radixdlt.client.core.ledger.AtomPuller;
 import com.radixdlt.client.core.ledger.AtomStore;
 import com.radixdlt.client.core.ledger.InMemoryAtomStore;
 import com.radixdlt.client.core.ledger.InMemoryAtomStoreReducer;
 import com.radixdlt.client.core.ledger.RadixAtomPuller;
 import com.radixdlt.client.core.network.RadixNetworkController;
-import com.radixdlt.client.core.network.RadixNetworkController.RadixNetworkControllerBuilder;
 import com.radixdlt.client.core.network.RadixNetworkEpic;
 import com.radixdlt.client.core.network.RadixNode;
 import com.radixdlt.client.core.network.WebSockets;
@@ -55,9 +47,17 @@ import com.radixdlt.client.core.network.epics.RadixJsonRpcAutoConnectEpic;
 import com.radixdlt.client.core.network.epics.RadixJsonRpcMethodEpic;
 import com.radixdlt.client.core.network.epics.SubmitAtomEpic;
 import com.radixdlt.client.core.network.epics.WebSocketEventsEpic;
-import com.radixdlt.client.core.network.epics.WebSocketsEpic.WebSocketsEpicBuilder;
+import com.radixdlt.client.core.network.epics.WebSocketsEpic;
 import com.radixdlt.client.core.network.reducers.RadixNetwork;
 import com.radixdlt.client.core.network.selector.RandomSelector;
+import com.radixdlt.crypto.ECPublicKey;
+import com.radixdlt.fees.FeeEntry;
+import com.radixdlt.fees.FeeTable;
+import com.radixdlt.fees.PerBytesFeeEntry;
+import com.radixdlt.fees.PerParticleFeeEntry;
+import com.radixdlt.identifiers.RRI;
+import com.radixdlt.identifiers.RadixAddress;
+import com.radixdlt.utils.UInt256;
 
 import java.util.List;
 import java.util.Set;
@@ -94,6 +94,7 @@ public final class RadixUniverse {
 	 * @param config universe config
 	 * @param discoveryEpics epics which are responsible for peer discovery
 	 * @param initialNetwork nodes in initial network
+	 *
 	 * @return the created universe
 	 */
 	public static RadixUniverse create(
@@ -111,6 +112,7 @@ public final class RadixUniverse {
 	 * @param discoveryEpics epics which are responsible for peer discovery
 	 * @param initialNetwork nodes in initial network
 	 * @param webSockets web sockets
+	 *
 	 * @return the created universe
 	 */
 	public static RadixUniverse create(
@@ -119,37 +121,41 @@ public final class RadixUniverse {
 		Set<RadixNode> initialNetwork,
 		WebSockets webSockets
 	) {
-		final InMemoryAtomStore inMemoryAtomStore = new InMemoryAtomStore();
-		config.getGenesis().forEach(atom ->
-			atom.addresses()
-				.forEach(addr -> inMemoryAtomStore.store(addr, AtomObservation.stored(atom, config.timestamp())))
-		);
+		final var inMemoryAtomStore = new InMemoryAtomStore();
+		config.getGenesis().forEach(atom -> storeAtom(config, inMemoryAtomStore, atom));
+		final var atomStoreReducer = InMemoryAtomStoreReducer.create(inMemoryAtomStore);
 
-		final InMemoryAtomStoreReducer atomStoreReducer = new InMemoryAtomStoreReducer(inMemoryAtomStore);
-
-		RadixNetworkControllerBuilder builder = new RadixNetworkControllerBuilder()
+		var builder = RadixNetworkController.builder()
 			.setNetwork(new RadixNetwork())
 			.addInitialNodes(initialNetwork)
 			.addReducer(atomStoreReducer::reduce)
 			.addEpic(
-				new WebSocketsEpicBuilder()
+				WebSocketsEpic.builder()
 					.setWebSockets(webSockets)
-					.add(WebSocketEventsEpic::new)
-					.add(ConnectWebSocketEpic::new)
-					.add(SubmitAtomEpic::new)
-					.add(FetchAtomsEpic::new)
+					.add(WebSocketEventsEpic::create)
+					.add(ConnectWebSocketEpic::create)
+					.add(SubmitAtomEpic::create)
+					.add(FetchAtomsEpic::create)
 					.add(RadixJsonRpcMethodEpic::createGetLivePeersEpic)
 					.add(RadixJsonRpcMethodEpic::createGetNodeDataEpic)
 					.add(RadixJsonRpcMethodEpic::createGetUniverseEpic)
 					.add(RadixJsonRpcAutoConnectEpic::new)
-					.add(RadixJsonRpcAutoCloseEpic::new)
+					.add(RadixJsonRpcAutoCloseEpic::create)
 					.build()
 			)
-			.addEpic(new FindANodeEpic(new RandomSelector()));
+			.addEpic(FindANodeEpic.create(RandomSelector.create()));
 
 		discoveryEpics.forEach(builder::addEpic);
 
 		return new RadixUniverse(config, builder.build(), inMemoryAtomStore);
+	}
+
+	private static void storeAtom(
+		final RadixUniverseConfig config,
+		final InMemoryAtomStore inMemoryAtomStore,
+		final Atom atom
+	) {
+		atom.addresses().forEach(addr -> inMemoryAtomStore.store(addr, AtomObservation.stored(atom, config.timestamp())));
 	}
 
 	/**
@@ -215,6 +221,7 @@ public final class RadixUniverse {
 	 * Within a universe, a public key has a one to one bijective relationship to an address
 	 *
 	 * @param publicKey the key to get an address from
+	 *
 	 * @return the corresponding address to the key for this universe
 	 */
 	public RadixAddress getAddressFrom(ECPublicKey publicKey) {
@@ -227,6 +234,7 @@ public final class RadixUniverse {
 
 	/**
 	 * Retrieves the fee table for this universe.
+	 *
 	 * @return The fee table for the universe.
 	 */
 	public FeeTable feeTable() {
@@ -234,7 +242,7 @@ public final class RadixUniverse {
 		// fee table, you will need to change the one there also.
 		ImmutableList<FeeEntry> feeEntries = ImmutableList.of(
 			// 1 millirad per byte after the first three kilobytes
-			PerBytesFeeEntry.of(1,  3072, milliRads(1L)),
+			PerBytesFeeEntry.of(1, 3072, milliRads(1L)),
 			// 1,000 millirads per fixed supply token definition
 			PerParticleFeeEntry.of(FixedSupplyTokenDefinitionParticle.class, 0, milliRads(1000L)),
 			// 1,000 millirads per mutable supply token definition

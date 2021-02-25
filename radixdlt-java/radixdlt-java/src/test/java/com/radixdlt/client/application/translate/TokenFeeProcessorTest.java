@@ -22,16 +22,16 @@
 
 package com.radixdlt.client.application.translate;
 
-import java.util.Optional;
-
 import org.junit.Test;
 
-import com.google.common.collect.ImmutableList;
 import com.radixdlt.client.core.atoms.Atom;
 import com.radixdlt.fees.FeeTable;
 import com.radixdlt.identifiers.RRI;
 import com.radixdlt.identifiers.RadixAddress;
 import com.radixdlt.utils.UInt256;
+
+import java.util.List;
+import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -42,14 +42,14 @@ public class TokenFeeProcessorTest {
 
 	@Test
 	public void testTokenFeeProcessor() {
-		RRI tokenRri = mock(RRI.class);
-		FeeTable feeTable = FeeTable.from(UInt256.TEN, ImmutableList.of());
-		RadixAddress address = mock(RadixAddress.class);
-		ActionProcessor actionProcessor = mock(ActionProcessor.class);
+		var tokenRri = mock(RRI.class);
+		var feeTable = FeeTable.from(UInt256.TEN, List.of());
+		var address = mock(RadixAddress.class);
+		var actionProcessor = mock(ActionProcessor.class);
 
-		TokenFeeProcessor tfp = new TokenFeeProcessor(tokenRri, feeTable);
+		var tfp = new TokenFeeProcessor(tokenRri, feeTable);
 
-		Atom atom = Atom.create(ImmutableList.of());
+		var atom = Atom.create();
 
 		tfp.process(actionProcessor, address, atom, Optional.empty());
 

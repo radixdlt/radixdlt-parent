@@ -121,6 +121,7 @@ public final class AtomObservation {
 	 *
 	 * @param atom the atom which is soft stored
 	 * @param timestamp the atom timestamp supplied by the node
+	 *
 	 * @return the atom stored observation
 	 */
 	public static AtomObservation softStored(Atom atom, long timestamp) {

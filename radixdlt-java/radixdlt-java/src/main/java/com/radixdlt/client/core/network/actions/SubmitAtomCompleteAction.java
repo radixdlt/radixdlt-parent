@@ -24,6 +24,7 @@ package com.radixdlt.client.core.network.actions;
 
 import com.radixdlt.client.core.atoms.Atom;
 import com.radixdlt.client.core.network.RadixNode;
+
 import java.util.Objects;
 
 public final class SubmitAtomCompleteAction implements SubmitAtomAction {
@@ -32,12 +33,16 @@ public final class SubmitAtomCompleteAction implements SubmitAtomAction {
 	private final RadixNode node;
 
 	private SubmitAtomCompleteAction(String uuid, Atom atom, RadixNode node) {
-		this.uuid = Objects.requireNonNull(uuid);
-		this.atom = Objects.requireNonNull(atom);
-		this.node = Objects.requireNonNull(node);
+		this.uuid = uuid;
+		this.atom = atom;
+		this.node = node;
 	}
 
-	public static SubmitAtomCompleteAction of(String uuid, Atom atom, RadixNode node) {
+	public static SubmitAtomCompleteAction create(String uuid, Atom atom, RadixNode node) {
+		Objects.requireNonNull(uuid);
+		Objects.requireNonNull(atom);
+		Objects.requireNonNull(node);
+
 		return new SubmitAtomCompleteAction(uuid, atom, node);
 	}
 

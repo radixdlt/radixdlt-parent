@@ -22,7 +22,6 @@
 
 package com.radixdlt.client.application.translate.tokens;
 
-import com.google.common.collect.ImmutableMap;
 import com.radixdlt.client.application.translate.ApplicationState;
 import com.radixdlt.client.atommodel.tokens.TransferrableTokensParticle;
 import com.radixdlt.identifiers.RRI;
@@ -31,18 +30,20 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.radixdlt.client.application.translate.tokens.TokenUnitConversions.subunitsToUnits;
+
 /**
  * All the token balances at an address at a given point in time.
  */
 public class TokenBalanceState implements ApplicationState {
-	private final ImmutableMap<RRI, BigDecimal> balance;
+	private final Map<RRI, BigDecimal> balance;
 
 	public TokenBalanceState() {
-		this.balance = ImmutableMap.of();
+		this.balance = Map.of();
 	}
 
 	public TokenBalanceState(Map<RRI, BigDecimal> balance) {
-		this.balance = ImmutableMap.copyOf(balance);
+		this.balance = Map.copyOf(balance);
 	}
 
 	public Map<RRI, BigDecimal> getBalance() {
@@ -54,19 +55,16 @@ public class TokenBalanceState implements ApplicationState {
 			return state0;
 		}
 
-		HashMap<RRI, BigDecimal> balance = new HashMap<>(state0.balance);
+		var balance = new HashMap<>(state0.balance);
 		state1.balance.forEach((rri, bal) -> balance.merge(rri, bal, BigDecimal::add));
 		return new TokenBalanceState(balance);
 	}
 
 	public static TokenBalanceState merge(TokenBalanceState state, TransferrableTokensParticle tokens) {
-		HashMap<RRI, BigDecimal> balance = new HashMap<>(state.balance);
-		BigDecimal amount = TokenUnitConversions.subunitsToUnits(tokens.getAmount());
-		balance.merge(
-			tokens.getTokenDefinitionReference(),
-			amount,
-			BigDecimal::add
-		);
+		var balance = new HashMap<RRI, BigDecimal>(state.balance);
+		var amount = subunitsToUnits(tokens.getAmount());
+
+		balance.merge(tokens.getTokenDefinitionReference(), amount, BigDecimal::add);
 
 		return new TokenBalanceState(balance);
 	}

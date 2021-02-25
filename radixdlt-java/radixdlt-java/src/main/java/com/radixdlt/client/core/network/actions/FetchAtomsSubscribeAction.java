@@ -22,8 +22,9 @@
 
 package com.radixdlt.client.core.network.actions;
 
-import com.radixdlt.identifiers.RadixAddress;
 import com.radixdlt.client.core.network.RadixNode;
+import com.radixdlt.identifiers.RadixAddress;
+
 import java.util.Objects;
 
 /**
@@ -34,21 +35,17 @@ public final class FetchAtomsSubscribeAction implements FetchAtomsAction {
 	private final RadixAddress address;
 	private final RadixNode node;
 
-	private FetchAtomsSubscribeAction(
-		String uuid,
-		RadixAddress address,
-		RadixNode node
-	) {
-		Objects.requireNonNull(uuid);
-		Objects.requireNonNull(address);
-		Objects.requireNonNull(node);
-
+	private FetchAtomsSubscribeAction(String uuid, RadixAddress address, RadixNode node) {
 		this.uuid = uuid;
 		this.address = address;
 		this.node = node;
 	}
 
-	public static FetchAtomsSubscribeAction of(String uuid, RadixAddress address, RadixNode node) {
+	public static FetchAtomsSubscribeAction create(String uuid, RadixAddress address, RadixNode node) {
+		Objects.requireNonNull(uuid);
+		Objects.requireNonNull(address);
+		Objects.requireNonNull(node);
+
 		return new FetchAtomsSubscribeAction(uuid, address, node);
 	}
 

@@ -30,6 +30,13 @@ import java.util.List;
  * A selector that always returns the first peer
  */
 public class GetFirstSelector implements RadixPeerSelector {
+	private GetFirstSelector() {
+	}
+
+	public static GetFirstSelector create() {
+		return new GetFirstSelector();
+	}
+
 	@Override
 	public RadixNode apply(List<RadixNode> radixNodes) {
 		return radixNodes.get(0);

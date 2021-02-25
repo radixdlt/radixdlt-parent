@@ -24,6 +24,7 @@ package com.radixdlt.client.core.network.actions;
 
 import com.radixdlt.client.core.network.RadixNode;
 import com.radixdlt.client.core.network.RadixNodeAction;
+
 import java.util.Objects;
 
 /**
@@ -33,16 +34,21 @@ public class FindANodeResultAction implements RadixNodeAction {
 	private final RadixNode selectedNode;
 	private final FindANodeRequestAction request;
 
-	public FindANodeResultAction(RadixNode selectedNode, FindANodeRequestAction request) {
-		Objects.requireNonNull(selectedNode);
-		Objects.requireNonNull(request);
-
+	private FindANodeResultAction(RadixNode selectedNode, FindANodeRequestAction request) {
 		this.selectedNode = selectedNode;
 		this.request = request;
 	}
 
+	public static FindANodeResultAction create(final RadixNode selectedNode, final FindANodeRequestAction request) {
+		Objects.requireNonNull(selectedNode);
+		Objects.requireNonNull(request);
+
+		return new FindANodeResultAction(selectedNode, request);
+	}
+
 	/**
 	 * The found/selected node
+	 *
 	 * @return the found/selected node
 	 */
 	@Override
@@ -52,6 +58,7 @@ public class FindANodeResultAction implements RadixNodeAction {
 
 	/**
 	 * The original request
+	 *
 	 * @return the original request
 	 */
 	public FindANodeRequestAction getRequest() {

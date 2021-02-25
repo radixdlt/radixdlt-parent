@@ -36,8 +36,12 @@ import io.reactivex.Observable;
 public final class ConnectWebSocketEpic implements RadixNetworkEpic {
 	private final WebSockets webSockets;
 
-	public ConnectWebSocketEpic(WebSockets webSockets) {
+	private ConnectWebSocketEpic(WebSockets webSockets) {
 		this.webSockets = webSockets;
+	}
+
+	public static ConnectWebSocketEpic create(WebSockets webSockets) {
+		return new ConnectWebSocketEpic(webSockets);
 	}
 
 	@Override

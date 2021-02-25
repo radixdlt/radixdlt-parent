@@ -23,6 +23,7 @@
 package com.radixdlt.client.core.network.actions;
 
 import com.radixdlt.client.core.network.RadixNode;
+
 import java.util.Objects;
 
 public class GetUniverseRequestAction implements JsonRpcMethodAction {
@@ -30,11 +31,12 @@ public class GetUniverseRequestAction implements JsonRpcMethodAction {
 	private final RadixNode node;
 
 	private GetUniverseRequestAction(RadixNode node) {
-		Objects.requireNonNull(node);
 		this.node = node;
 	}
 
-	public static GetUniverseRequestAction of(RadixNode node) {
+	public static GetUniverseRequestAction create(RadixNode node) {
+		Objects.requireNonNull(node);
+
 		return new GetUniverseRequestAction(node);
 	}
 

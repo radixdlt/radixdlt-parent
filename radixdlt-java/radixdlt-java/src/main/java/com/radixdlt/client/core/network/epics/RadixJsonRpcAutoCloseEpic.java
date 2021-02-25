@@ -39,8 +39,12 @@ public final class RadixJsonRpcAutoCloseEpic implements RadixNetworkEpic {
 
 	private final WebSockets webSockets;
 
-	public RadixJsonRpcAutoCloseEpic(WebSockets webSockets) {
+	private RadixJsonRpcAutoCloseEpic(WebSockets webSockets) {
 		this.webSockets = webSockets;
+	}
+
+	public static RadixJsonRpcAutoCloseEpic create(WebSockets webSockets) {
+		return new RadixJsonRpcAutoCloseEpic(webSockets);
 	}
 
 	@Override

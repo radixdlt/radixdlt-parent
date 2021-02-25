@@ -43,6 +43,6 @@ public class AtomToPlaintextMessageMapper implements AtomToExecutedActionsMapper
 		if (message == null) {
 			return Observable.empty();
 		}
-		return Observable.just(new PlaintextMessage(atom.getAid(), message));
+		return Observable.just(PlaintextMessage.create(atom.getAid(), message));
 	}
 }

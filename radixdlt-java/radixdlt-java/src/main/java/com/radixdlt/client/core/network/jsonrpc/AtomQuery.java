@@ -22,15 +22,18 @@
 
 package com.radixdlt.client.core.network.jsonrpc;
 
-import com.radixdlt.identifiers.RadixAddress;
-
 import com.google.gson.JsonObject;
+import com.radixdlt.identifiers.RadixAddress;
 
 public class AtomQuery {
 	private final RadixAddress address;
 
-	public AtomQuery(RadixAddress address) {
+	private AtomQuery(RadixAddress address) {
 		this.address = address;
+	}
+
+	public static AtomQuery create(RadixAddress address) {
+		return new AtomQuery(address);
 	}
 
 	public JsonObject toJson() {

@@ -32,7 +32,7 @@ public final class DiscoverMoreNodesAction implements RadixNodeAction {
 	private DiscoverMoreNodesAction() {
 	}
 
-	public static DiscoverMoreNodesAction instance() {
+	public static DiscoverMoreNodesAction create() {
 		return new DiscoverMoreNodesAction();
 	}
 

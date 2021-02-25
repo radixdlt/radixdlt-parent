@@ -17,16 +17,15 @@
 
 package com.radixdlt.client.atommodel.tokens;
 
-import java.util.Set;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Objects;
-import com.google.common.collect.ImmutableSet;
 import com.radixdlt.client.core.atoms.particles.Particle;
 import com.radixdlt.identifiers.EUID;
 import com.radixdlt.serialization.DsonOutput;
 import com.radixdlt.serialization.SerializerId2;
+
+import java.util.Set;
 
 @SerializerId2("radix.particles.system_particle")
 public final class SystemParticle extends Particle {
@@ -55,7 +54,7 @@ public final class SystemParticle extends Particle {
 
 	@Override
 	public Set<EUID> getDestinations() {
-		return ImmutableSet.of();
+		return Set.of();
 	}
 
 	public long getEpoch() {
@@ -81,7 +80,7 @@ public final class SystemParticle extends Particle {
 			return false;
 		}
 
-		SystemParticle other = (SystemParticle) o;
+		var other = (SystemParticle) o;
 		return this.epoch == other.epoch
 			&& this.view == other.view
 			&& this.timestamp == other.timestamp

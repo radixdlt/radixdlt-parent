@@ -24,6 +24,7 @@ package com.radixdlt.client.core.network.actions;
 
 import com.radixdlt.client.core.network.RadixNode;
 import com.radixdlt.client.core.network.RadixNodeAction;
+
 import java.util.Objects;
 
 /**
@@ -33,11 +34,12 @@ public final class CloseWebSocketAction implements RadixNodeAction {
 	private final RadixNode node;
 
 	private CloseWebSocketAction(RadixNode node) {
-		Objects.requireNonNull(node);
 		this.node = node;
 	}
 
-	public static CloseWebSocketAction of(RadixNode node) {
+	public static CloseWebSocketAction create(RadixNode node) {
+		Objects.requireNonNull(node);
+
 		return new CloseWebSocketAction(node);
 	}
 

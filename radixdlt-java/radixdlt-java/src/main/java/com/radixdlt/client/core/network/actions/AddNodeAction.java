@@ -25,6 +25,7 @@ package com.radixdlt.client.core.network.actions;
 import com.radixdlt.client.core.network.RadixNode;
 import com.radixdlt.client.core.network.RadixNodeAction;
 import com.radixdlt.client.core.network.jsonrpc.NodeRunnerData;
+
 import java.util.Objects;
 import java.util.Optional;
 
@@ -36,17 +37,17 @@ public final class AddNodeAction implements RadixNodeAction {
 	private final NodeRunnerData data;
 
 	private AddNodeAction(RadixNode node, NodeRunnerData data) {
-		Objects.requireNonNull(node);
-
 		this.node = node;
 		this.data = data;
 	}
 
-	public static AddNodeAction of(RadixNode node) {
-		return new AddNodeAction(node, null);
+	public static AddNodeAction create(RadixNode node) {
+		return create(node, null);
 	}
 
-	public static AddNodeAction of(RadixNode node, NodeRunnerData data) {
+	public static AddNodeAction create(RadixNode node, NodeRunnerData data) {
+		Objects.requireNonNull(node);
+
 		return new AddNodeAction(node, data);
 	}
 

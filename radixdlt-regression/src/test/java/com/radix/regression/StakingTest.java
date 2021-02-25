@@ -17,10 +17,12 @@
 
 package com.radix.regression;
 
+import org.junit.Test;
+
 import com.google.common.collect.ImmutableSet;
 import com.radix.test.utils.TokenUtilities;
 import com.radixdlt.client.application.RadixApplicationAPI;
-import com.radixdlt.client.application.RadixApplicationAPI.Result;
+import com.radixdlt.client.application.Result;
 import com.radixdlt.client.application.identity.RadixIdentities;
 import com.radixdlt.client.application.translate.tokens.CreateTokenAction;
 import com.radixdlt.client.application.translate.tokens.CreateTokenAction.TokenSupplyType;
@@ -31,11 +33,9 @@ import com.radixdlt.client.core.network.RadixNode;
 import com.radixdlt.identifiers.RRI;
 import com.radixdlt.utils.UInt256;
 
-import org.junit.Test;
-
 import java.math.BigDecimal;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class StakingTest {
 	@Test

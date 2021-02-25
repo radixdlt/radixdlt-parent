@@ -22,6 +22,17 @@
 
 package com.radixdlt.client.core.atoms;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.radixdlt.client.core.atoms.particles.Particle;
+import com.radixdlt.client.core.atoms.particles.Spin;
+import com.radixdlt.client.core.atoms.particles.SpunParticle;
+import com.radixdlt.serialization.DsonOutput;
+import com.radixdlt.serialization.SerializerConstants;
+import com.radixdlt.serialization.SerializerDummy;
+import com.radixdlt.serialization.SerializerId2;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -30,17 +41,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import com.radixdlt.serialization.DsonOutput;
-import com.radixdlt.serialization.SerializerConstants;
-import com.radixdlt.serialization.SerializerDummy;
-import com.radixdlt.serialization.SerializerId2;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.radixdlt.client.core.atoms.particles.Particle;
-import com.radixdlt.client.core.atoms.particles.Spin;
-import com.radixdlt.client.core.atoms.particles.SpunParticle;
 
 /**
  * A group of particles representing one intent, e.g. a transfer.
@@ -87,6 +87,7 @@ public class ParticleGroup {
 
 	/**
 	 * Get a stream of the spun particles in this group
+	 *
 	 * @return The spun particles in this group
 	 */
 	public final Stream<SpunParticle> spunParticles() {
@@ -97,23 +98,27 @@ public class ParticleGroup {
 	 * Get a stream of particles of a certain spin in this group
 	 *
 	 * @param spin The spin to filter by
+	 *
 	 * @return The particles in this group with that spin
 	 */
 	public final Stream<Particle> particles(Spin spin) {
-		return this.spunParticles().filter(p -> p.getSpin() == spin).map(SpunParticle::getParticle);
+		return spunParticles().filter(p -> p.getSpin() == spin).map(SpunParticle::getParticle);
 	}
 
-	/** Get the metadata associated with the particle group
+	/**
+	 * Get the metadata associated with the particle group
+	 *
 	 * @return an immutable map of the metadata
 	 */
 	public Map<String, String> getMetaData() {
-		return this.metaData;
+		return metaData;
 	}
 
 	/**
 	 * Get a {@link ParticleGroup} consisting of the given particles
 	 *
 	 * @param particles particles to include in this group
+	 *
 	 * @return instance of {@link ParticleGroup}
 	 */
 	public static ParticleGroup of(Iterable<SpunParticle> particles) {
@@ -127,6 +132,7 @@ public class ParticleGroup {
 	 *
 	 * @param particles particles to include in this group
 	 * @param metaData extra metadata for group
+	 *
 	 * @return instance of {@link ParticleGroup}
 	 */
 	public static ParticleGroup of(Iterable<SpunParticle> particles, Map<String, String> metaData) {
@@ -140,6 +146,7 @@ public class ParticleGroup {
 	 * Get a {@link ParticleGroup} consisting of the given particles
 	 *
 	 * @param particles particles to include in this group
+	 *
 	 * @return instance of {@link ParticleGroup}
 	 */
 	public static ParticleGroup of(SpunParticle... particles) {
@@ -150,22 +157,24 @@ public class ParticleGroup {
 
 	/**
 	 * Whether this {@link ParticleGroup} contains any particles
+	 *
 	 * @return {@code true} if group contains particles
 	 */
 	public boolean hasParticles() {
-		return !this.particles.isEmpty();
+		return !particles.isEmpty();
 	}
 
 	@Override
 	public String toString() {
-		String particlesStr = (this.particles == null)
-			? "null"
-			: particles.stream().map(SpunParticle::toString).collect(Collectors.joining(","));
+		var particlesStr = (particles == null)
+						   ? "null"
+						   : particles.stream().map(SpunParticle::toString).collect(Collectors.joining(","));
 		return String.format("%s[%s]", getClass().getSimpleName(), particlesStr);
 	}
 
 	/**
 	 * Get a build for a single {@link ParticleGroup}
+	 *
 	 * @return The {@link ParticleGroupBuilder}
 	 */
 	public static ParticleGroupBuilder builder() {
@@ -185,7 +194,7 @@ public class ParticleGroup {
 		public final ParticleGroupBuilder addParticle(SpunParticle spunParticle) {
 			Objects.requireNonNull(spunParticle, "spunParticle is required");
 
-			this.particles.add(spunParticle);
+			particles.add(spunParticle);
 
 			return this;
 		}
@@ -194,8 +203,8 @@ public class ParticleGroup {
 			Objects.requireNonNull(particle, "particle is required");
 			Objects.requireNonNull(spin, "spin is required");
 
-			SpunParticle spunParticle = SpunParticle.of(particle, spin);
-			this.particles.add(spunParticle);
+			var spunParticle = SpunParticle.of(particle, spin);
+			particles.add(spunParticle);
 
 			return this;
 		}
@@ -204,14 +213,14 @@ public class ParticleGroup {
 			Objects.requireNonNull(key, "key is required");
 			Objects.requireNonNull(value, "value is required");
 
-			this.metaData.put(key, value);
+			metaData.put(key, value);
 
 			return this;
 		}
 
 
 		public ParticleGroup build() {
-			return new ParticleGroup(this.particles, metaData);
+			return new ParticleGroup(particles, metaData);
 		}
 	}
 }

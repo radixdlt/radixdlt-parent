@@ -37,10 +37,14 @@ public class RegisterValidatorAction implements Action {
 	private final Set<RadixAddress> allowedDelegators;
 	private final String url;
 
-	public RegisterValidatorAction(RadixAddress validator, Set<RadixAddress> allowedDelegators, String url) {
+	private RegisterValidatorAction(RadixAddress validator, Set<RadixAddress> allowedDelegators, String url) {
 		this.validator = Objects.requireNonNull(validator);
 		this.allowedDelegators = Objects.requireNonNull(allowedDelegators);
 		this.url = url;
+	}
+
+	public static RegisterValidatorAction create(RadixAddress validator, Set<RadixAddress> allowedDelegators, String url) {
+		return new RegisterValidatorAction(validator, allowedDelegators, url);
 	}
 
 	public RadixAddress getValidator() {

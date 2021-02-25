@@ -32,8 +32,12 @@ import com.radixdlt.identifiers.RadixAddress;
 public class UnregisterValidatorAction implements Action {
 	private final RadixAddress validator;
 
-	public UnregisterValidatorAction(RadixAddress validator) {
+	private UnregisterValidatorAction(RadixAddress validator) {
 		this.validator = validator;
+	}
+
+	public static UnregisterValidatorAction create(RadixAddress validator) {
+		return new UnregisterValidatorAction(validator);
 	}
 
 	public RadixAddress getValidator() {

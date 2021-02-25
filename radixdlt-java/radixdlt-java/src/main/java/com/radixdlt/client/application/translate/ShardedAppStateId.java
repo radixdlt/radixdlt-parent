@@ -23,6 +23,7 @@
 package com.radixdlt.client.application.translate;
 
 import com.radixdlt.identifiers.RadixAddress;
+
 import java.util.Objects;
 
 /**
@@ -33,14 +34,14 @@ public final class ShardedAppStateId {
 	private final RadixAddress address;
 
 	private ShardedAppStateId(Class<? extends ApplicationState> stateClass, RadixAddress address) {
-		Objects.requireNonNull(stateClass);
-		Objects.requireNonNull(address);
-
 		this.stateClass = stateClass;
 		this.address = address;
 	}
 
 	public static ShardedAppStateId of(Class<? extends ApplicationState> stateClass, RadixAddress address) {
+		Objects.requireNonNull(stateClass);
+		Objects.requireNonNull(address);
+
 		return new ShardedAppStateId(stateClass, address);
 	}
 
@@ -68,7 +69,7 @@ public final class ShardedAppStateId {
 			return false;
 		}
 
-		ShardedAppStateId r = (ShardedAppStateId) o;
+		var r = (ShardedAppStateId) o;
 		return r.stateClass.equals(stateClass) && r.address.equals(address);
 	}
 
@@ -82,4 +83,3 @@ public final class ShardedAppStateId {
 		return address + "/" + stateClass.getSimpleName();
 	}
 }
-

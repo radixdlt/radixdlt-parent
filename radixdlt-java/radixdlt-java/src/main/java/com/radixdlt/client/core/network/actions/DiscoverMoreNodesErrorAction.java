@@ -31,8 +31,12 @@ import com.radixdlt.client.core.network.RadixNodeAction;
 public final class DiscoverMoreNodesErrorAction implements RadixNodeAction {
 	private final Throwable reason;
 
-	public DiscoverMoreNodesErrorAction(Throwable reason) {
+	private DiscoverMoreNodesErrorAction(Throwable reason) {
 		this.reason = reason;
+	}
+
+	public static RadixNodeAction create(final Throwable reason) {
+		return new DiscoverMoreNodesErrorAction(reason);
 	}
 
 	public Throwable getReason() {

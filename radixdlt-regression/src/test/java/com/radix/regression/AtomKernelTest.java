@@ -92,7 +92,7 @@ public class AtomKernelTest {
 			1 << 20,
 			true,
 			SpunParticle.down(new RRIParticle(rri)),
-			SpunParticle.up(new UniqueParticle(rri.getAddress(), rri.getName()))
+			SpunParticle.up(UniqueParticle.create(rri))
 		);
 
 		observer.awaitTerminalEvent();
@@ -107,7 +107,7 @@ public class AtomKernelTest {
 			10,
 			false,
 			SpunParticle.down(new RRIParticle(rri)),
-			SpunParticle.up(new UniqueParticle(rri.getAddress(), rri.getName()))
+			SpunParticle.up(UniqueParticle.create(rri))
 		);
 		observer.awaitCount(1);
 		observer.assertValue(n -> n.getAtomStatus() == AtomStatus.EVICTED_FAILED_CM_VERIFICATION);

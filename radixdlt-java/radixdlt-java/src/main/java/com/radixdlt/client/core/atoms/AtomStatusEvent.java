@@ -31,13 +31,17 @@ public final class AtomStatusEvent {
 	private final AtomStatus atomStatus;
 	private final JsonObject data;
 
-	public AtomStatusEvent(AtomStatus atomStatus, JsonObject data) {
+	private AtomStatusEvent(AtomStatus atomStatus, JsonObject data) {
 		this.atomStatus = atomStatus;
 		this.data = data;
 	}
 
-	public AtomStatusEvent(AtomStatus atomStatus) {
-		this(atomStatus, null);
+	public static AtomStatusEvent create(AtomStatus atomStatus) {
+		return create(atomStatus, null);
+	}
+
+	public static AtomStatusEvent create(AtomStatus atomStatus, JsonObject data) {
+		return new AtomStatusEvent(atomStatus, data);
 	}
 
 	public AtomStatus getAtomStatus() {

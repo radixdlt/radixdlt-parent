@@ -27,12 +27,9 @@ import com.radixdlt.client.core.atoms.Atom;
 import com.radixdlt.client.core.atoms.ParticleGroup;
 import com.radixdlt.client.core.atoms.particles.Particle;
 import com.radixdlt.client.core.atoms.particles.Spin;
-import com.radixdlt.client.core.atoms.particles.SpunParticle;
 import com.radixdlt.client.core.ledger.AtomObservation.Type;
-import com.radixdlt.client.core.ledger.AtomObservation.AtomObservationUpdateType;
-import io.reactivex.Observable;
-import io.reactivex.ObservableEmitter;
-import io.reactivex.annotations.Nullable;
+import com.radixdlt.identifiers.RadixAddress;
+
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -47,7 +44,11 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.radixdlt.identifiers.RadixAddress;
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.annotations.Nullable;
+
+import static java.util.Optional.ofNullable;
 
 /**
  * An in memory storage of atoms and particles
@@ -69,10 +70,10 @@ public class InMemoryAtomStore implements AtomStore {
 	private void softDeleteDependentsOf(Atom atom) {
 		atom.particles(Spin.UP)
 			.forEach(p -> {
-				Map<Spin, Set<Atom>> particleSpinIndex = particleIndex.get(p);
+				var particleSpinIndex = particleIndex.get(p);
 				particleSpinIndex.getOrDefault(Spin.DOWN, Set.of())
 					.forEach(a -> {
-						AtomObservation observation = atoms.get(a);
+						var observation = atoms.get(a);
 						if (observation.getAtom().equals(atom)) {
 							return;
 						}
@@ -93,17 +94,16 @@ public class InMemoryAtomStore implements AtomStore {
 		Objects.requireNonNull(particleGroup);
 
 		synchronized (lock) {
-			Atom stagedAtom = stagedAtoms.get(uuid);
-			if (stagedAtom == null) {
-				stagedAtom = Atom.create(particleGroup);
-			} else {
-				var groups = Stream.concat(stagedAtom.particleGroups(), Stream.of(particleGroup)).collect(Collectors.toList());
-				stagedAtom = Atom.create(groups);
-			}
+			var groups = Stream.concat(
+				Stream.of(particleGroup),
+				ofNullable(stagedAtoms.get(uuid)).map(Atom::particleGroups).orElse(Stream.empty())
+			).collect(Collectors.toList());
+
+			var stagedAtom = Atom.create(groups);
 			stagedAtoms.put(uuid, stagedAtom);
 
-			for (SpunParticle sp : particleGroup.getSpunParticles()) {
-				Map<Particle, Spin> index = stagedParticleIndex.getOrDefault(uuid, new LinkedHashMap<>());
+			for (var sp : particleGroup.getSpunParticles()) {
+				var index = stagedParticleIndex.getOrDefault(uuid, new LinkedHashMap<>());
 				index.put(sp.getParticle(), sp.getSpin());
 				stagedParticleIndex.put(uuid, index);
 			}
@@ -115,8 +115,7 @@ public class InMemoryAtomStore implements AtomStore {
 		Objects.requireNonNull(uuid);
 
 		synchronized (lock) {
-			final Atom atom = stagedAtoms.get(uuid);
-			return atom.particleGroups().collect(Collectors.toList());
+			return stagedAtoms.get(uuid).particleGroups().collect(Collectors.toList());
 		}
 	}
 
@@ -125,7 +124,7 @@ public class InMemoryAtomStore implements AtomStore {
 		Objects.requireNonNull(uuid);
 
 		synchronized (lock) {
-			final Atom atom = stagedAtoms.remove(uuid);
+			final var atom = stagedAtoms.remove(uuid);
 			stagedParticleIndex.get(uuid).clear();
 			return atom.particleGroups().collect(Collectors.toList());
 		}
@@ -142,12 +141,12 @@ public class InMemoryAtomStore implements AtomStore {
 			final boolean synced = atomObservation.isHead();
 			syncedMap.put(address, synced);
 
-			final Atom atom = atomObservation.getAtom();
+			final var atom = atomObservation.getAtom();
 			if (atom != null) {
 
-				final AtomObservation curObservation = atoms.get(atom);
-				final AtomObservationUpdateType nextUpdate = atomObservation.getUpdateType();
-				final AtomObservationUpdateType lastUpdate = curObservation != null ? curObservation.getUpdateType() : null;
+				final var curObservation = atoms.get(atom);
+				final var nextUpdate = atomObservation.getUpdateType();
+				final var lastUpdate = curObservation != null ? curObservation.getUpdateType() : null;
 
 				// If a new hard observed atoms conflicts with a previously stored atom,
 				// stored atom must be deleted
@@ -159,7 +158,7 @@ public class InMemoryAtomStore implements AtomStore {
 								if (a.equals(atom)) {
 									return;
 								}
-								AtomObservation oldObservation = atoms.get(a);
+								var oldObservation = atoms.get(a);
 								if (oldObservation.isStore()) {
 									softDeleteDependentsOf(a);
 									atoms.put(a, AtomObservation.softDeleted(a));
@@ -172,7 +171,7 @@ public class InMemoryAtomStore implements AtomStore {
 				if (lastUpdate == null) {
 					include = nextUpdate.getType() == Type.STORE;
 					atom.spunParticles().forEach(s -> {
-						Map<Spin, Set<Atom>> spinParticleIndex = particleIndex.get(s.getParticle());
+						var spinParticleIndex = particleIndex.get(s.getParticle());
 						if (spinParticleIndex == null) {
 							spinParticleIndex = new EnumMap<>(Spin.class);
 							particleIndex.put(s.getParticle(), spinParticleIndex);
@@ -208,14 +207,14 @@ public class InMemoryAtomStore implements AtomStore {
 					});
 				}
 			} else {
-				final CopyOnWriteArrayList<ObservableEmitter<AtomObservation>> observers = allObservers.get(address);
+				final var observers = allObservers.get(address);
 				if (observers != null) {
 					observers.forEach(e -> e.onNext(atomObservation));
 				}
 			}
 
 			if (synced) {
-				final CopyOnWriteArrayList<ObservableEmitter<Long>> syncers = allSyncers.get(address);
+				final var syncers = allSyncers.get(address);
 				if (syncers != null) {
 					syncers.forEach(e -> e.onNext(System.currentTimeMillis()));
 				}
@@ -231,13 +230,7 @@ public class InMemoryAtomStore implements AtomStore {
 					emitter.onNext(System.currentTimeMillis());
 				}
 
-				final CopyOnWriteArrayList<ObservableEmitter<Long>> syncers;
-				if (!allSyncers.containsKey(address)) {
-					syncers = new CopyOnWriteArrayList<>();
-					allSyncers.put(address, syncers);
-				} else {
-					syncers = allSyncers.get(address);
-				}
+				var syncers = allSyncers.computeIfAbsent(address, key -> new CopyOnWriteArrayList<>());
 				syncers.add(emitter);
 				emitter.setCancellable(() -> syncers.remove(emitter));
 			}

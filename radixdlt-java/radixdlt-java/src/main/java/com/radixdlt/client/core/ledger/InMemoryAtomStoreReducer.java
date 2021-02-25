@@ -24,11 +24,12 @@ package com.radixdlt.client.core.ledger;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.radixdlt.client.core.atoms.Atom;
 import com.radixdlt.client.core.atoms.AtomStatus;
 import com.radixdlt.client.core.network.RadixNodeAction;
 import com.radixdlt.client.core.network.actions.FetchAtomsObservationAction;
 import com.radixdlt.client.core.network.actions.SubmitAtomStatusAction;
+
+import java.util.Optional;
 
 /**
  * Wrapper reducer class for the Atom Store
@@ -36,24 +37,29 @@ import com.radixdlt.client.core.network.actions.SubmitAtomStatusAction;
 public final class InMemoryAtomStoreReducer {
 	private final InMemoryAtomStore atomStore;
 
-	public InMemoryAtomStoreReducer(InMemoryAtomStore atomStore) {
+	private InMemoryAtomStoreReducer(InMemoryAtomStore atomStore) {
 		this.atomStore = atomStore;
 	}
 
-	public void reduce(RadixNodeAction action) {
-		if (action instanceof FetchAtomsObservationAction) {
-			FetchAtomsObservationAction fetchAtomsObservationAction = (FetchAtomsObservationAction) action;
-			AtomObservation observation = fetchAtomsObservationAction.getObservation();
-			this.atomStore.store(fetchAtomsObservationAction.getAddress(), observation);
-		} else if (action instanceof SubmitAtomStatusAction) {
+	public static InMemoryAtomStoreReducer create(final InMemoryAtomStore atomStore) {
+		return new InMemoryAtomStoreReducer(atomStore);
+	}
+
+
+	public void reduce(RadixNodeAction inputAction) {
+		if (inputAction instanceof FetchAtomsObservationAction) {
+			var action = (FetchAtomsObservationAction) inputAction;
+
+			this.atomStore.store(action.getAddress(), action.getObservation());
+		} else if (inputAction instanceof SubmitAtomStatusAction) {
 
 			// Soft storage of atoms so that atoms which are submitted and stored can
 			// be immediately used instead of having to wait for fetch atom events.
-			final SubmitAtomStatusAction submitAtomStatusAction = (SubmitAtomStatusAction) action;
-			final Atom atom = submitAtomStatusAction.getAtom();
+			final var action = (SubmitAtomStatusAction) inputAction;
+			final var atom = action.getAtom();
 
-			if (submitAtomStatusAction.getStatusNotification().getAtomStatus() == AtomStatus.STORED) {
-				final long timestamp = retrieveTimestamp(submitAtomStatusAction.getStatusNotification().getData());
+			if (action.getStatusNotification().getAtomStatus() == AtomStatus.STORED) {
+				final long timestamp = retrieveTimestamp(action.getStatusNotification().getData());
 				atom.addresses().forEach(address -> {
 					this.atomStore.store(address, AtomObservation.softStored(atom, timestamp));
 					this.atomStore.store(address, AtomObservation.head());
@@ -63,12 +69,9 @@ public final class InMemoryAtomStoreReducer {
 	}
 
 	private static long retrieveTimestamp(JsonObject data) {
-		if (data != null) {
-			JsonElement jsonTimestamp = data.get("timestamp");
-			if (jsonTimestamp != null) {
-				return jsonTimestamp.getAsLong();
-			}
-		}
-		return Long.MIN_VALUE;
+		return Optional.ofNullable(data)
+			.map(d -> d.get("timestamp"))
+			.map(JsonElement::getAsLong)
+			.orElse(Long.MIN_VALUE);
 	}
 }

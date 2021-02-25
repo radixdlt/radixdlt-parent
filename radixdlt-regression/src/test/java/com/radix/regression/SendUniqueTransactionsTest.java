@@ -17,20 +17,20 @@
 
 package com.radix.regression;
 
-import com.radixdlt.client.application.RadixApplicationAPI.Transaction;
-import com.radixdlt.client.core.RadixEnv;
-import com.radixdlt.identifiers.RRI;
-import com.radixdlt.client.core.network.RadixNetworkState;
-import com.radixdlt.client.core.network.RadixNode;
 import org.junit.Test;
 
 import com.radix.test.utils.TokenUtilities;
 import com.radixdlt.client.application.RadixApplicationAPI;
+import com.radixdlt.client.application.Transaction;
 import com.radixdlt.client.application.identity.RadixIdentities;
 import com.radixdlt.client.application.translate.ActionExecutionException;
 import com.radixdlt.client.application.translate.unique.AlreadyUsedUniqueIdReason;
 import com.radixdlt.client.application.translate.unique.PutUniqueIdAction;
 import com.radixdlt.client.application.translate.unique.UniqueId;
+import com.radixdlt.client.core.RadixEnv;
+import com.radixdlt.client.core.network.RadixNetworkState;
+import com.radixdlt.client.core.network.RadixNode;
+import com.radixdlt.identifiers.RRI;
 
 import io.reactivex.Completable;
 import io.reactivex.functions.Predicate;
@@ -74,7 +74,7 @@ public class SendUniqueTransactionsTest {
 
 		// Then client should be notified that unique id is already used
 		submissionObserver.awaitTerminalEvent();
-		final AlreadyUsedUniqueIdReason expectedReason = new AlreadyUsedUniqueIdReason(new UniqueId(api.getAddress(), uniqueId));
+		final AlreadyUsedUniqueIdReason expectedReason = new AlreadyUsedUniqueIdReason(UniqueId.create(api.getAddress(), uniqueId));
 		final Predicate<ActionExecutionException> hasExpectedUniqueIdCollision = e -> e.getReasons().stream()
 			.anyMatch(expectedReason::equals);
 		submissionObserver.assertError(e -> hasExpectedUniqueIdCollision.test((ActionExecutionException) e));

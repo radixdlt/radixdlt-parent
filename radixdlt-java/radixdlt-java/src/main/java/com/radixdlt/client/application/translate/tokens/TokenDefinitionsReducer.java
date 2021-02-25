@@ -22,16 +22,16 @@
 
 package com.radixdlt.client.application.translate.tokens;
 
-import com.radixdlt.client.atommodel.tokens.MutableSupplyTokenDefinitionParticle.TokenTransition;
-import com.radixdlt.client.atommodel.tokens.UnallocatedTokensParticle;
-
-import com.radixdlt.client.atommodel.tokens.MutableSupplyTokenDefinitionParticle;
-
 import com.radixdlt.client.application.translate.ParticleReducer;
 import com.radixdlt.client.application.translate.tokens.TokenState.TokenSupplyType;
 import com.radixdlt.client.atommodel.tokens.FixedSupplyTokenDefinitionParticle;
+import com.radixdlt.client.atommodel.tokens.MutableSupplyTokenDefinitionParticle;
+import com.radixdlt.client.atommodel.tokens.MutableSupplyTokenDefinitionParticle.TokenTransition;
 import com.radixdlt.client.atommodel.tokens.TokenPermission;
+import com.radixdlt.client.atommodel.tokens.UnallocatedTokensParticle;
 import com.radixdlt.client.core.atoms.particles.Particle;
+
+import static com.radixdlt.client.application.translate.tokens.TokenUnitConversions.subunitsToUnits;
 
 /**
  * Reduces particles at an address into concrete Tokens and their states
@@ -54,9 +54,8 @@ public class TokenDefinitionsReducer implements ParticleReducer<TokenDefinitions
 			return reduceInternal(state, (MutableSupplyTokenDefinitionParticle) p);
 		} else if (p instanceof FixedSupplyTokenDefinitionParticle) {
 			return reduceInternal(state, (FixedSupplyTokenDefinitionParticle) p);
-		} else  if (p instanceof UnallocatedTokensParticle) {
-			UnallocatedTokensParticle u = (UnallocatedTokensParticle) p;
-			return state.mergeUnallocated(u);
+		} else if (p instanceof UnallocatedTokensParticle) {
+			return state.mergeUnallocated((UnallocatedTokensParticle) p);
 		}
 
 		return state;
@@ -68,12 +67,7 @@ public class TokenDefinitionsReducer implements ParticleReducer<TokenDefinitions
 	}
 
 	private TokenDefinitionsState reduceInternal(TokenDefinitionsState state, MutableSupplyTokenDefinitionParticle tokenDefinitionParticle) {
-		TokenPermission mintPermission = tokenDefinitionParticle.getTokenPermissions().get(TokenTransition.MINT);
-
-		if (!mintPermission.equals(TokenPermission.TOKEN_OWNER_ONLY) && !mintPermission.equals(TokenPermission.ALL)) {
-			throw new IllegalStateException(
-				"TokenDefinitionParticle with mintPermissions of " + mintPermission + " not supported.");
-		}
+		validateMintPermission(tokenDefinitionParticle);
 
 		return state.mergeTokenClass(
 			tokenDefinitionParticle.getRRI(),
@@ -82,9 +76,17 @@ public class TokenDefinitionsReducer implements ParticleReducer<TokenDefinitions
 			tokenDefinitionParticle.getDescription(),
 			tokenDefinitionParticle.getIconUrl(),
 			null,
-			TokenUnitConversions.subunitsToUnits(tokenDefinitionParticle.getGranularity()),
+			subunitsToUnits(tokenDefinitionParticle.getGranularity()),
 			TokenSupplyType.MUTABLE
 		);
+	}
+
+	private void validateMintPermission(final MutableSupplyTokenDefinitionParticle tokenDefinitionParticle) {
+		var mintPermission = tokenDefinitionParticle.getTokenPermissions().get(TokenTransition.MINT);
+
+		if (mintPermission != TokenPermission.TOKEN_OWNER_ONLY && mintPermission != TokenPermission.ALL) {
+			throw new IllegalStateException("TokenDefinitionParticle with mintPermissions of " + mintPermission + " not supported.");
+		}
 	}
 
 	private TokenDefinitionsState reduceInternal(TokenDefinitionsState state, FixedSupplyTokenDefinitionParticle tokenDefinitionParticle) {
@@ -94,8 +96,8 @@ public class TokenDefinitionsReducer implements ParticleReducer<TokenDefinitions
 			tokenDefinitionParticle.getSymbol(),
 			tokenDefinitionParticle.getDescription(),
 			tokenDefinitionParticle.getIconUrl(),
-			TokenUnitConversions.subunitsToUnits(tokenDefinitionParticle.getSupply()),
-			TokenUnitConversions.subunitsToUnits(tokenDefinitionParticle.getGranularity()),
+			subunitsToUnits(tokenDefinitionParticle.getSupply()),
+			subunitsToUnits(tokenDefinitionParticle.getGranularity()),
 			TokenSupplyType.FIXED
 		);
 	}

@@ -17,24 +17,25 @@
 
 package com.radix.regression;
 
+import org.junit.Test;
+
 import com.radix.test.utils.TokenUtilities;
 import com.radixdlt.client.application.RadixApplicationAPI;
-import com.radixdlt.client.application.RadixApplicationAPI.Result;
+import com.radixdlt.client.application.Result;
 import com.radixdlt.client.application.identity.RadixIdentities;
 import com.radixdlt.client.application.translate.tokens.CreateTokenAction.TokenSupplyType;
 import com.radixdlt.client.application.translate.tokens.TokenDefinitionsState;
 import com.radixdlt.client.application.translate.tokens.TokenUnitConversions;
 import com.radixdlt.client.core.RadixEnv;
 import com.radixdlt.identifiers.RRI;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
-import io.reactivex.observers.TestObserver;
 
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.junit.Test;
+import io.reactivex.observers.TestObserver;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class IconUrlTest {
 	@Test

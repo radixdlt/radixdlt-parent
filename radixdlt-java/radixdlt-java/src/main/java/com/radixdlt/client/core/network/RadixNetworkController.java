@@ -48,13 +48,17 @@ import org.apache.logging.log4j.Logger;
 public class RadixNetworkController {
 	private static final Logger LOGGER = LogManager.getLogger(RadixNetworkController.class);
 
+	public static RadixNetworkControllerBuilder builder() {
+		return new RadixNetworkControllerBuilder();
+	}
+
 	public static class RadixNetworkControllerBuilder {
 		private RadixNetwork network;
 		private final ImmutableList.Builder<RadixNetworkEpic> epics = new Builder<>();
 		private final ImmutableList.Builder<Consumer<RadixNodeAction>> reducers = new Builder<>();
 		private final Set<RadixNode> initialNodes = new HashSet<>();
 
-		public RadixNetworkControllerBuilder() {
+		private RadixNetworkControllerBuilder() {
 		}
 
 		public RadixNetworkControllerBuilder addReducer(Consumer<RadixNodeAction> reducer) {

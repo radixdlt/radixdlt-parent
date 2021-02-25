@@ -22,7 +22,6 @@
 
 package com.radixdlt.client.application.translate.validators;
 
-import com.google.common.collect.ImmutableSet;
 import com.radixdlt.client.atommodel.validators.RegisteredValidatorParticle;
 import com.radixdlt.client.atommodel.validators.UnregisteredValidatorParticle;
 import com.radixdlt.client.core.atoms.particles.Particle;
@@ -53,57 +52,65 @@ final class ValidatorRegistrationState {
 	 * Creates a {@link RegisteredValidatorParticle} to register this validator, if possible.
 	 * Note that by default
 	 *
-	 * @throws IllegalStateException if validator is already registered
 	 * @return the well-formed {@link RegisteredValidatorParticle} to register this validator
+	 *
+	 * @throws IllegalStateException if validator is already registered
 	 */
 	RegisteredValidatorParticle register() {
-		return register(null, ImmutableSet.of());
+		return register(null, Set.of());
 	}
 
 	/**
 	 * Creates a {@link RegisteredValidatorParticle} to register this validator, if possible.
-	 * @throws IllegalStateException if validator is already registered
-	 * @return the well-formed {@link RegisteredValidatorParticle} to register this validator
+	 *
 	 * @param url the optional URL for extra information about this validator
 	 * @param allowedDelegators the allowed delegators, or empty if everyone is allowed
+	 *
+	 * @return the well-formed {@link RegisteredValidatorParticle} to register this validator
+	 *
+	 * @throws IllegalStateException if validator is already registered
 	 */
 	RegisteredValidatorParticle register(String url, Set<RadixAddress> allowedDelegators) {
-		if (this.registered) {
-			throw new IllegalStateException(String.format(
-				"cannot register validator %s, already registered as of %s",
-				address, nonce)
-			);
+		if (!this.registered) {
+			return new RegisteredValidatorParticle(this.address, allowedDelegators, url, this.nonce + 1);
 		}
 
-		return new RegisteredValidatorParticle(this.address, allowedDelegators, url, this.nonce + 1);
+		throw new IllegalStateException(
+			String.format("cannot register validator %s, already registered as of %s", address, nonce)
+		);
 	}
 
 	/**
 	 * Creates an {@link UnregisteredValidatorParticle} to unregister this validator, if possible.
-	 * @throws IllegalStateException if validator is not registered
+	 *
 	 * @return the well-formed {@link UnregisteredValidatorParticle} to register this validator
+	 *
+	 * @throws IllegalStateException if validator is not registered
 	 */
 	UnregisteredValidatorParticle unregister() {
-		if (!this.registered) {
-			throw new IllegalStateException(String.format(
-				"cannot unregister validator %s, not registered as of %s",
-				address, nonce
-			));
+		if (this.registered) {
+			return new UnregisteredValidatorParticle(this.address, this.nonce + 1);
 		}
 
-		return new UnregisteredValidatorParticle(this.address, this.nonce + 1);
+		throw new IllegalStateException(
+			String.format("cannot unregister validator %s, not registered as of %s", address, nonce)
+		);
 	}
 
 	/**
 	 * Extracts the latest validator registration of a given address state from a store of particles.
+	 *
 	 * @param store the store of {@link RegisteredValidatorParticle}s and {@link UnregisteredValidatorParticle}s
 	 * @param address the address of the validator
-	 * @throws IllegalArgumentException if any particle is not of the correct type
+	 *
 	 * @return the latest {@link ValidatorRegistrationState} (may be initial if none)
+	 *
+	 * @throws IllegalArgumentException if any particle is not of the correct type
 	 */
 	static ValidatorRegistrationState from(Stream<Particle> store, RadixAddress address) {
 		Objects.requireNonNull(store, "store");
 		Objects.requireNonNull(address, "address");
+
 		return store
 			.map(ValidatorRegistrationState::from)
 			.filter(state -> state.getAddress().equals(address))
@@ -113,17 +120,21 @@ final class ValidatorRegistrationState {
 
 	/**
 	 * Extracts the validator registration state from a given validator registration particle
+	 *
 	 * @param particle the {@link RegisteredValidatorParticle} or {@link UnregisteredValidatorParticle}
-	 * @throws IllegalArgumentException if the particle is not of the correct type
+	 *
 	 * @return the extracted {@link ValidatorRegistrationState}
+	 *
+	 * @throws IllegalArgumentException if the particle is not of the correct type
 	 */
 	static ValidatorRegistrationState from(Particle particle) {
 		Objects.requireNonNull(particle, "particle");
+
 		if (particle instanceof RegisteredValidatorParticle) {
-			RegisteredValidatorParticle validator = (RegisteredValidatorParticle) particle;
-			return new ValidatorRegistrationState(particle, validator.getAddress(), true, validator.getNonce());
-		} else if (particle instanceof  UnregisteredValidatorParticle) {
-			UnregisteredValidatorParticle unregistered = (UnregisteredValidatorParticle) particle;
+			var registered = (RegisteredValidatorParticle) particle;
+			return new ValidatorRegistrationState(particle, registered.getAddress(), true, registered.getNonce());
+		} else if (particle instanceof UnregisteredValidatorParticle) {
+			var unregistered = (UnregisteredValidatorParticle) particle;
 			return new ValidatorRegistrationState(particle, unregistered.getAddress(), false, unregistered.getNonce());
 		} else {
 			throw new IllegalArgumentException(String.format("unknown particle: %s", particle));
@@ -133,13 +144,15 @@ final class ValidatorRegistrationState {
 	/**
 	 * Gets the initial validator registration state for a certain address.
 	 * The initial state is for a validator to be unregistered at nonce 0.
+	 *
 	 * @param address the validator address
+	 *
 	 * @return the initial {@link ValidatorRegistrationState} for the address
 	 */
 	static ValidatorRegistrationState initial(RadixAddress address) {
 		Objects.requireNonNull(address, "address");
-		UnregisteredValidatorParticle initialState = new UnregisteredValidatorParticle(address, 0);
-		return ValidatorRegistrationState.from(initialState);
+
+		return ValidatorRegistrationState.from(new UnregisteredValidatorParticle(address, 0));
 	}
 
 	@Override
@@ -147,10 +160,12 @@ final class ValidatorRegistrationState {
 		if (this == o) {
 			return true;
 		}
+
 		if (!(o instanceof ValidatorRegistrationState)) {
 			return false;
 		}
-		ValidatorRegistrationState that = (ValidatorRegistrationState) o;
+
+		var that = (ValidatorRegistrationState) o;
 		return registered == that.registered
 			&& nonce == that.nonce
 			&& Objects.equals(particle, that.particle)

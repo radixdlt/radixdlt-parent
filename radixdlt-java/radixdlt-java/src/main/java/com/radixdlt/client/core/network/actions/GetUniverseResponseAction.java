@@ -24,6 +24,7 @@ package com.radixdlt.client.core.network.actions;
 
 import com.radixdlt.client.core.address.RadixUniverseConfig;
 import com.radixdlt.client.core.network.RadixNode;
+
 import java.util.Objects;
 
 public class GetUniverseResponseAction implements JsonRpcResultAction<RadixUniverseConfig> {
@@ -31,14 +32,14 @@ public class GetUniverseResponseAction implements JsonRpcResultAction<RadixUnive
 	private final RadixUniverseConfig config;
 
 	private GetUniverseResponseAction(RadixNode node, RadixUniverseConfig config) {
-		Objects.requireNonNull(node);
-		Objects.requireNonNull(config);
-
 		this.node = node;
 		this.config = config;
 	}
 
-	public static GetUniverseResponseAction of(RadixNode node, RadixUniverseConfig config) {
+	public static GetUniverseResponseAction create(RadixNode node, RadixUniverseConfig config) {
+		Objects.requireNonNull(node);
+		Objects.requireNonNull(config);
+
 		return new GetUniverseResponseAction(node, config);
 	}
 

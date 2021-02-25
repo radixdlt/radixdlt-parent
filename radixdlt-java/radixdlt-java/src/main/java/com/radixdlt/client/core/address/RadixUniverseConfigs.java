@@ -29,16 +29,18 @@ public final class RadixUniverseConfigs {
     private RadixUniverseConfigs() { }
 
     public static RadixUniverseConfig getLocalnet() {
+        //TODO: stream is left open
         return RadixUniverseConfig.fromInputStream(getConfigFileStream("localnet.json"));
     }
 
     public static RadixUniverseConfig getBetanet() {
+        //TODO: stream is left open
         return RadixUniverseConfig.fromInputStream(getConfigFileStream("betanet.json"));
     }
 
     private static InputStream getConfigFileStream(String name) {
-        String source = "/universe/" + name;
-        InputStream configFileStream = RadixUniverseConfig.class.getResourceAsStream(source);
+        var source = "/universe/" + name;
+        var configFileStream = RadixUniverseConfig.class.getResourceAsStream(source);
 
         if (configFileStream == null) {
             throw new RuntimeException("Config file from " + source + " not found");

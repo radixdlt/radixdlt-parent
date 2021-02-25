@@ -22,12 +22,11 @@
 
 package com.radixdlt.client.core.atoms.particles;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.radixdlt.serialization.DsonOutput;
 import com.radixdlt.serialization.SerializerConstants;
 import com.radixdlt.serialization.SerializerDummy;
 import com.radixdlt.serialization.SerializerId2;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 @SerializerId2("radix.spun_particle")
 public class SpunParticle {
@@ -91,6 +90,7 @@ public class SpunParticle {
 	public String toString() {
 		String hid = (this.particle == null) ? "null" : this.particle.euid().toString();
 		return String.format("%s[%s:%s:%s:%s]", getClass().getSimpleName(), hid, String.valueOf(spin), String.valueOf(particle),
-			String.valueOf(this.particle != null ? particle.getDestinations() : "null"));
+							 String.valueOf(this.particle != null ? particle.getDestinations() : "null")
+		);
 	}
 }

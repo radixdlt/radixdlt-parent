@@ -31,13 +31,17 @@ import com.radixdlt.client.core.network.RadixNodeAction;
  */
 public class NodeUniverseMismatch implements RadixNodeAction {
 	private final RadixNode node;
- 	private final RadixUniverseConfig expected;
+	private final RadixUniverseConfig expected;
 	private final RadixUniverseConfig actual;
 
-	public NodeUniverseMismatch(RadixNode node, RadixUniverseConfig expected, RadixUniverseConfig actual) {
+	private NodeUniverseMismatch(RadixNode node, RadixUniverseConfig expected, RadixUniverseConfig actual) {
 		this.node = node;
 		this.expected = expected;
 		this.actual = actual;
+	}
+
+	public static NodeUniverseMismatch create(RadixNode node, RadixUniverseConfig expected, RadixUniverseConfig result) {
+		return new NodeUniverseMismatch(node, expected, result);
 	}
 
 	@Override

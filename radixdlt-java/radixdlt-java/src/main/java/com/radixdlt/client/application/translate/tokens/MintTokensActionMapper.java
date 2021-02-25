@@ -22,32 +22,29 @@
 
 package com.radixdlt.client.application.translate.tokens;
 
-import com.google.common.collect.ImmutableSet;
-import com.radixdlt.client.application.translate.StageActionException;
 import com.radixdlt.client.application.translate.ShardedParticleStateId;
+import com.radixdlt.client.application.translate.StageActionException;
+import com.radixdlt.client.application.translate.StatefulActionToParticleGroupsMapper;
 import com.radixdlt.client.atommodel.tokens.MutableSupplyTokenDefinitionParticle;
-import com.radixdlt.client.atommodel.tokens.MutableSupplyTokenDefinitionParticle.TokenTransition;
-import com.radixdlt.client.atommodel.tokens.TokenPermission;
 import com.radixdlt.client.atommodel.tokens.TransferrableTokensParticle;
 import com.radixdlt.client.atommodel.tokens.UnallocatedTokensParticle;
+import com.radixdlt.client.core.atoms.ParticleGroup;
+import com.radixdlt.client.core.atoms.particles.Particle;
 import com.radixdlt.client.core.atoms.particles.SpunParticle;
 import com.radixdlt.client.core.fungible.FungibleTransitionMapper;
-import com.radixdlt.identifiers.RRI;
 import com.radixdlt.client.core.fungible.NotEnoughFungiblesException;
+import com.radixdlt.identifiers.RRI;
+import com.radixdlt.utils.UInt256;
+
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-
-import com.radixdlt.client.core.atoms.ParticleGroup;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import com.radixdlt.utils.UInt256;
 
-import com.radixdlt.client.application.translate.StatefulActionToParticleGroupsMapper;
-import com.radixdlt.identifiers.RadixAddress;
-import com.radixdlt.client.core.atoms.particles.Particle;
+import static com.radixdlt.client.application.translate.tokens.TokenUnitConversions.unitsToSubunits;
 
 public class MintTokensActionMapper implements StatefulActionToParticleGroupsMapper<MintTokensAction> {
 	public MintTokensActionMapper() {
@@ -57,16 +54,17 @@ public class MintTokensActionMapper implements StatefulActionToParticleGroupsMap
 	private static List<SpunParticle> mapToParticles(MintTokensAction mint, List<UnallocatedTokensParticle> currentParticles)
 		throws NotEnoughFungiblesException {
 
-		final UInt256 totalAmountToBurn = TokenUnitConversions.unitsToSubunits(mint.getAmount());
+		final var totalAmountToBurn = unitsToSubunits(mint.getAmount());
+
 		if (currentParticles.isEmpty()) {
 			throw new NotEnoughFungiblesException(totalAmountToBurn, UInt256.ZERO);
 		}
 
-		final RRI token = currentParticles.get(0).getTokDefRef();
-		final UInt256 granularity = currentParticles.get(0).getGranularity();
-		final Map<TokenTransition, TokenPermission> permissions = currentParticles.get(0).getTokenPermissions();
+		final var token = currentParticles.get(0).getTokDefRef();
+		final var granularity = currentParticles.get(0).getGranularity();
+		final var permissions = currentParticles.get(0).getTokenPermissions();
 
-		FungibleTransitionMapper<UnallocatedTokensParticle, TransferrableTokensParticle> mapper = new FungibleTransitionMapper<>(
+		var mapper = new FungibleTransitionMapper<>(
 			UnallocatedTokensParticle::getAmount,
 			amt ->
 				new UnallocatedTokensParticle(
@@ -92,9 +90,9 @@ public class MintTokensActionMapper implements StatefulActionToParticleGroupsMap
 
 	@Override
 	public Set<ShardedParticleStateId> requiredState(MintTokensAction mintTokensAction) {
-		RadixAddress tokenDefinitionAddress = mintTokensAction.getRRI().getAddress();
+		var tokenDefinitionAddress = mintTokensAction.getRRI().getAddress();
 
-		return ImmutableSet.of(
+		return Set.of(
 			ShardedParticleStateId.of(UnallocatedTokensParticle.class, tokenDefinitionAddress),
 			ShardedParticleStateId.of(MutableSupplyTokenDefinitionParticle.class, tokenDefinitionAddress)
 		);
@@ -106,26 +104,22 @@ public class MintTokensActionMapper implements StatefulActionToParticleGroupsMap
 			throw new IllegalArgumentException("Mint amount must be greater than 0.");
 		}
 
-		final RRI tokenRef = mintTokensAction.getRRI();
+		var tokenRef = mintTokensAction.getRRI();
+		var particles = store.collect(Collectors.groupingBy(Particle::getClass));
+		var defParticles = particles.get(MutableSupplyTokenDefinitionParticle.class);
 
-		Map<Class<? extends Particle>, List<Particle>> particles = store.collect(Collectors.groupingBy(Particle::getClass));
-		final List<Particle> tokDefParticles = particles.get(MutableSupplyTokenDefinitionParticle.class);
-		if (tokDefParticles == null
-			|| tokDefParticles.stream().noneMatch(p -> ((MutableSupplyTokenDefinitionParticle) p).getRRI().equals(tokenRef))
-			) {
-			throw new UnknownTokenException(mintTokensAction.getRRI());
-		}
+		validateTokenIsKnown(mintTokensAction, tokenRef, defParticles);
 
-		final List<UnallocatedTokensParticle> currentParticles =
+		var currentParticles =
 			particles.getOrDefault(UnallocatedTokensParticle.class, Collections.emptyList())
 				.stream()
 				.map(UnallocatedTokensParticle.class::cast)
 				.filter(p -> p.getTokDefRef().equals(tokenRef))
 				.collect(Collectors.toList());
 
-		final List<SpunParticle> mintParticles;
 		try {
-			mintParticles = mapToParticles(mintTokensAction, currentParticles);
+			var mintParticles = mapToParticles(mintTokensAction, currentParticles);
+			return List.of(ParticleGroup.of(mintParticles));
 		} catch (NotEnoughFungiblesException e) {
 			throw new TokenOverMintException(
 				mintTokensAction.getRRI(),
@@ -134,9 +128,17 @@ public class MintTokensActionMapper implements StatefulActionToParticleGroupsMap
 				mintTokensAction.getAmount()
 			);
 		}
+	}
 
-		return Collections.singletonList(
-			ParticleGroup.of(mintParticles)
-		);
+	private void validateTokenIsKnown(final MintTokensAction mintTokensAction, final RRI tokenRef, final List<Particle> tokDefParticles) {
+		Optional.ofNullable(tokDefParticles)
+			.orElse(List.of())
+			.stream()
+			.map(MutableSupplyTokenDefinitionParticle.class::cast)
+			.filter(p -> p.getRRI().equals(tokenRef))
+			.findFirst()
+			.orElseThrow(() -> {
+				throw new UnknownTokenException(mintTokensAction.getRRI());
+			});
 	}
 }

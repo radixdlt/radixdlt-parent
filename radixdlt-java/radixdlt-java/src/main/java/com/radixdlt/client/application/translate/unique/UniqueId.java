@@ -23,15 +23,23 @@
 package com.radixdlt.client.application.translate.unique;
 
 import com.radixdlt.identifiers.RadixAddress;
+
 import java.util.Objects;
 
 public final class UniqueId {
 	private final RadixAddress address;
 	private final String unique;
 
-	public UniqueId(RadixAddress address, String unique) {
-		this.address = Objects.requireNonNull(address);
-		this.unique = Objects.requireNonNull(unique);
+	private UniqueId(RadixAddress address, String unique) {
+		this.address = address;
+		this.unique = unique;
+	}
+
+	public static UniqueId create(RadixAddress address, String unique) {
+		Objects.requireNonNull(address);
+		Objects.requireNonNull(unique);
+
+		return new UniqueId(address, unique);
 	}
 
 	public RadixAddress getAddress() {
@@ -58,7 +66,7 @@ public final class UniqueId {
 			return false;
 		}
 
-		UniqueId uniqueId = (UniqueId) obj;
+		var uniqueId = (UniqueId) obj;
 		return uniqueId.address.equals(this.address) && uniqueId.unique.equals(this.unique);
 	}
 }

@@ -22,37 +22,11 @@
 
 package com.radixdlt.client.application;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Sets;
-import com.radixdlt.client.core.BootstrapConfig;
-import com.radixdlt.client.core.address.RadixUniverseConfig;
-import com.radixdlt.client.core.address.RadixUniverseConfigs;
-import com.radixdlt.client.core.atoms.AtomStatus;
-import com.radixdlt.client.core.atoms.AtomStatusEvent;
-import com.radixdlt.identifiers.RRI;
-import com.radixdlt.client.core.network.RadixNetworkController;
-import com.radixdlt.client.core.network.RadixNetworkEpic;
-import com.radixdlt.client.core.network.RadixNetworkState;
-import com.radixdlt.client.core.network.RadixNode;
-import com.radixdlt.client.core.network.RadixNodeAction;
-import com.radixdlt.client.core.network.actions.FetchAtomsObservationAction;
-import com.radixdlt.client.core.network.actions.SubmitAtomCompleteAction;
-import com.radixdlt.client.core.network.actions.SubmitAtomRequestAction;
-import com.radixdlt.utils.Pair;
-import io.reactivex.subjects.PublishSubject;
-import io.reactivex.subjects.ReplaySubject;
-import java.math.BigDecimal;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Stream;
-
 import org.junit.Test;
 
+import com.google.common.collect.Sets;
 import com.google.gson.JsonObject;
 import com.radixdlt.client.application.RadixApplicationAPI.RadixApplicationAPIBuilder;
-import com.radixdlt.client.application.RadixApplicationAPI.Result;
 import com.radixdlt.client.application.identity.RadixIdentity;
 import com.radixdlt.client.application.translate.Action;
 import com.radixdlt.client.application.translate.ActionExecutionException;
@@ -63,20 +37,48 @@ import com.radixdlt.client.application.translate.StatelessActionToParticleGroups
 import com.radixdlt.client.application.translate.data.AtomToPlaintextMessageMapper;
 import com.radixdlt.client.application.translate.data.PlaintextMessage;
 import com.radixdlt.client.application.translate.tokens.TokenBalanceReducer;
-import com.radixdlt.identifiers.RadixAddress;
-import com.radixdlt.test.util.TypedMocks;
+import com.radixdlt.client.core.BootstrapConfig;
 import com.radixdlt.client.core.RadixUniverse;
+import com.radixdlt.client.core.address.RadixUniverseConfig;
+import com.radixdlt.client.core.address.RadixUniverseConfigs;
 import com.radixdlt.client.core.atoms.Atom;
-import com.radixdlt.client.core.ledger.AtomObservation;
+import com.radixdlt.client.core.atoms.AtomStatusEvent;
 import com.radixdlt.client.core.atoms.ParticleGroup;
 import com.radixdlt.client.core.atoms.particles.Particle;
 import com.radixdlt.client.core.atoms.particles.SpunParticle;
-import com.radixdlt.crypto.ECPublicKey;
+import com.radixdlt.client.core.ledger.AtomObservation;
 import com.radixdlt.client.core.ledger.AtomStore;
+import com.radixdlt.client.core.network.RadixNetworkController;
+import com.radixdlt.client.core.network.RadixNetworkEpic;
+import com.radixdlt.client.core.network.RadixNetworkState;
+import com.radixdlt.client.core.network.RadixNode;
+import com.radixdlt.client.core.network.RadixNodeAction;
+import com.radixdlt.client.core.network.actions.FetchAtomsObservationAction;
 import com.radixdlt.client.core.network.actions.SubmitAtomAction;
+import com.radixdlt.client.core.network.actions.SubmitAtomCompleteAction;
 import com.radixdlt.client.core.network.actions.SubmitAtomReceivedAction;
-import com.radixdlt.client.core.network.actions.SubmitAtomStatusAction;
+import com.radixdlt.client.core.network.actions.SubmitAtomRequestAction;
 import com.radixdlt.client.core.network.actions.SubmitAtomSendAction;
+import com.radixdlt.client.core.network.actions.SubmitAtomStatusAction;
+import com.radixdlt.crypto.ECPublicKey;
+import com.radixdlt.identifiers.EUID;
+import com.radixdlt.identifiers.RRI;
+import com.radixdlt.identifiers.RadixAddress;
+import com.radixdlt.test.util.TypedMocks;
+import com.radixdlt.utils.Pair;
+
+import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Stream;
+
+import io.reactivex.Observable;
+import io.reactivex.Single;
+import io.reactivex.observers.TestObserver;
+import io.reactivex.subjects.PublishSubject;
+import io.reactivex.subjects.ReplaySubject;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -87,22 +89,21 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import io.reactivex.Observable;
-import io.reactivex.Single;
-import io.reactivex.observers.TestObserver;
-import com.radixdlt.identifiers.EUID;
+import static com.radixdlt.client.core.atoms.AtomStatus.EVICTED_CONFLICT_LOSER;
+import static com.radixdlt.client.core.atoms.AtomStatus.STORED;
 
 public class RadixApplicationAPITest {
 	private RadixApplicationAPI createMockedAPI(RadixNetworkController controller, AtomStore atomStore) {
-		RadixUniverse universe = mock(RadixUniverse.class);
+		var universe = mock(RadixUniverse.class);
 		when(universe.getAtomStore()).thenReturn(atomStore);
 		when(universe.getNetworkController()).thenReturn(controller);
-		RadixIdentity identity = mock(RadixIdentity.class);
 
-		Atom atom = mock(Atom.class);
+		var identity = mock(RadixIdentity.class);
+
+		var atom = mock(Atom.class);
 		when(identity.addSignature(any())).thenReturn(Single.just(atom));
 
-		FeeProcessor feeMapper = (actionProcessor, address, feeAtom, fee) -> Pair.of(ImmutableMap.of(), ImmutableList.of());
+		FeeProcessor feeMapper = (actionProcessor, address, feeAtom, fee) -> Pair.of(Map.of(), List.of());
 
 		return RadixApplicationAPI.defaultBuilder()
 			.identity(identity)
@@ -112,62 +113,69 @@ public class RadixApplicationAPITest {
 	}
 
 	private RadixApplicationAPI createMockedAPIWhichAlwaysSucceeds() {
-		AtomStore atomStore = mock(AtomStore.class);
-		RadixNetworkController controller = mock(RadixNetworkController.class);
-		PublishSubject<RadixNodeAction> nodeActions = PublishSubject.create();
+		var atomStore = mock(AtomStore.class);
+		var controller = mock(RadixNetworkController.class);
+		var nodeActions = PublishSubject.<RadixNodeAction>create();
+
 		when(controller.getActions()).thenReturn(nodeActions);
+
 		doAnswer(a -> {
-			SubmitAtomRequestAction request = a.getArgument(0);
-			SubmitAtomSendAction submitting = mock(SubmitAtomSendAction.class);
+			var request = a.<SubmitAtomRequestAction>getArgument(0);
+			var submitting = mock(SubmitAtomSendAction.class);
 			when(submitting.getUuid()).thenReturn(request.getUuid());
-			SubmitAtomReceivedAction received = mock(SubmitAtomReceivedAction.class);
+
+			var received = mock(SubmitAtomReceivedAction.class);
 			when(received.getUuid()).thenReturn(request.getUuid());
-			SubmitAtomStatusAction stored = mock(SubmitAtomStatusAction.class);
-			when(stored.getStatusNotification()).thenReturn(new AtomStatusEvent(AtomStatus.STORED));
+
+			var stored = mock(SubmitAtomStatusAction.class);
+			when(stored.getStatusNotification()).thenReturn(AtomStatusEvent.create(STORED));
 			when(stored.getUuid()).thenReturn(request.getUuid());
-			SubmitAtomCompleteAction complete = mock(SubmitAtomCompleteAction.class);
+
+			var complete = mock(SubmitAtomCompleteAction.class);
 			when(complete.getUuid()).thenReturn(request.getUuid());
+
 			nodeActions.onNext(submitting);
 			nodeActions.onNext(received);
 			nodeActions.onNext(stored);
 			nodeActions.onNext(complete);
 			return null;
 		}).when(controller).dispatch(any(SubmitAtomRequestAction.class));
+
 		return createMockedAPI(controller, atomStore);
 	}
 
 	private void validateSuccessfulStoreAtomResult(Result result) {
 		TestObserver<?> completionObserver = TestObserver.create();
-		TestObserver<SubmitAtomAction> updatesObserver = TestObserver.create();
+		var updatesObserver = TestObserver.<SubmitAtomAction>create();
+
 		result.toCompletable().subscribe(completionObserver);
 		completionObserver.assertNoErrors();
 		completionObserver.assertComplete();
 
 		result.toObservable().subscribe(updatesObserver);
+
 		updatesObserver.awaitTerminalEvent();
 		updatesObserver.assertNoErrors();
 		updatesObserver.assertComplete();
 		updatesObserver.assertValueCount(3);
-		updatesObserver.assertValueAt(0, atomUpdate ->
-			atomUpdate instanceof SubmitAtomSendAction);
-		updatesObserver.assertValueAt(1, atomUpdate ->
-			atomUpdate instanceof SubmitAtomReceivedAction);
+		updatesObserver.assertValueAt(0, atomUpdate -> atomUpdate instanceof SubmitAtomSendAction);
+		updatesObserver.assertValueAt(1, atomUpdate -> atomUpdate instanceof SubmitAtomReceivedAction);
 		updatesObserver.assertValueAt(2, atomUpdate ->
-			((SubmitAtomStatusAction) atomUpdate).getStatusNotification().getAtomStatus().equals(AtomStatus.STORED));
+			((SubmitAtomStatusAction) atomUpdate).getStatusNotification().getAtomStatus().equals(STORED));
 	}
 
 	@Test
 	public void testNull() {
 		assertThatThrownBy(() -> RadixApplicationAPI.create(null, null))
-				.isInstanceOf(NullPointerException.class);
+			.isInstanceOf(NullPointerException.class);
 
 		RadixApplicationAPI api = createMockedAPIWhichAlwaysSucceeds();
 		assertThatThrownBy(() -> api.observeMessages(null))
-				.isInstanceOf(NullPointerException.class);
+			.isInstanceOf(NullPointerException.class);
 		assertThatThrownBy(() -> api.observeTokenTransfers(null))
-				.isInstanceOf(NullPointerException.class);
+			.isInstanceOf(NullPointerException.class);
 		assertThatThrownBy(() -> api.observeBalance(null, null))
-				.isInstanceOf(NullPointerException.class);
+			.isInstanceOf(NullPointerException.class);
 	}
 
 	@Test
@@ -261,7 +269,7 @@ public class RadixApplicationAPITest {
 
 		RadixAddress address = mock(RadixAddress.class);
 		when(controller.getActions()).thenReturn(Observable.just(
-			FetchAtomsObservationAction.of("uuid", address, mock(RadixNode.class), AtomObservation.head())
+			FetchAtomsObservationAction.create("uuid", address, mock(RadixNode.class), AtomObservation.head())
 		));
 		RadixIdentity identity = mock(RadixIdentity.class);
 
@@ -284,9 +292,9 @@ public class RadixApplicationAPITest {
 		Particle particle = mock(Particle.class);
 		RadixAddress address = mock(RadixAddress.class);
 		when(address.euid()).thenReturn(EUID.ONE);
-		when(particle.getDestinations()).thenReturn(Collections.singleton(EUID.ONE));
+		when(particle.getDestinations()).thenReturn(Set.of(EUID.ONE));
 		when(particle.euid()).thenReturn(EUID.ONE);
-		Atom atom = Atom.create(Collections.singletonList(ParticleGroup.of(SpunParticle.up(particle))));
+		Atom atom = Atom.create(ParticleGroup.of(SpunParticle.up(particle)));
 		RadixIdentity identity = mock(RadixIdentity.class);
 		when(identity.addSignature(any())).thenReturn(Single.just(atom));
 		RadixUniverse universe = mock(RadixUniverse.class);
@@ -301,7 +309,7 @@ public class RadixApplicationAPITest {
 			SubmitAtomStatusAction update = mock(SubmitAtomStatusAction.class);
 			when(update.getUuid()).thenReturn(request.getUuid());
 			when(update.getAtom()).thenReturn(atom);
-			when(update.getStatusNotification()).thenReturn(new AtomStatusEvent(AtomStatus.EVICTED_CONFLICT_LOSER, errorData));
+			when(update.getStatusNotification()).thenReturn(AtomStatusEvent.create(EVICTED_CONFLICT_LOSER, errorData));
 			SubmitAtomCompleteAction complete = mock(SubmitAtomCompleteAction.class);
 			when(complete.getUuid()).thenReturn(request.getUuid());
 			nodeActions.onNext(update);
@@ -325,7 +333,7 @@ public class RadixApplicationAPITest {
 			.identity(identity)
 			.universe(universe)
 			.addStatelessParticlesMapper(action.getClass(), actionMapper)
-			.feeProcessor((actionProcessor, addr, feeAtom, fee) -> Pair.of(ImmutableMap.of(), ImmutableList.of()))
+			.feeProcessor((actionProcessor, addr, feeAtom, fee) -> Pair.of(Map.of(), List.of()))
 			.addAtomErrorMapper(errorMapper)
 			.build();
 

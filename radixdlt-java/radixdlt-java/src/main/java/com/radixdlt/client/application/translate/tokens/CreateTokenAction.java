@@ -22,11 +22,17 @@
 
 package com.radixdlt.client.application.translate.tokens;
 
+import com.radixdlt.client.application.translate.Action;
+import com.radixdlt.client.atommodel.tokens.FixedSupplyTokenDefinitionParticle;
+import com.radixdlt.client.atommodel.tokens.MutableSupplyTokenDefinitionParticle;
+import com.radixdlt.client.atommodel.tokens.TokenPermission;
 import com.radixdlt.identifiers.RRI;
+
 import java.math.BigDecimal;
+import java.util.Map;
 import java.util.Objects;
 
-import com.radixdlt.client.application.translate.Action;
+import static com.radixdlt.client.application.translate.tokens.TokenUnitConversions.unitsToSubunits;
 
 public class CreateTokenAction implements Action {
 	public enum TokenSupplyType {
@@ -53,25 +59,14 @@ public class CreateTokenAction implements Action {
 		BigDecimal granularity,
 		TokenSupplyType tokenSupplyType
 	) {
-		// Redundant null check added for completeness
-		Objects.requireNonNull(initialSupply);
-
-		if (initialSupply.compareTo(BigDecimal.ZERO) < 0) {
-			throw new IllegalArgumentException("Supply cannot be less than 0.");
-		}
-
-		if (tokenSupplyType.equals(TokenSupplyType.FIXED) && initialSupply.compareTo(BigDecimal.ZERO) == 0) {
-			throw new IllegalArgumentException("Fixed supply must be greater than 0.");
-		}
-
-		this.name = Objects.requireNonNull(name);
-		this.rri = Objects.requireNonNull(rri);
+		this.name = name;
+		this.rri = rri;
 		this.description = description;
 		this.iconUrl = iconUrl;
 		this.url = url;
 		this.initialSupply = initialSupply;
-		this.granularity = Objects.requireNonNull(granularity);
-		this.tokenSupplyType = Objects.requireNonNull(tokenSupplyType);
+		this.granularity = granularity;
+		this.tokenSupplyType = tokenSupplyType;
 	}
 
 	public static CreateTokenAction create(
@@ -84,6 +79,20 @@ public class CreateTokenAction implements Action {
 		BigDecimal granularity,
 		TokenSupplyType tokenSupplyType
 	) {
+		Objects.requireNonNull(initialSupply);
+		Objects.requireNonNull(name);
+		Objects.requireNonNull(tokenRRI);
+		Objects.requireNonNull(granularity);
+		Objects.requireNonNull(tokenSupplyType);
+
+		if (initialSupply.compareTo(BigDecimal.ZERO) < 0) {
+			throw new IllegalArgumentException("Supply cannot be less than 0.");
+		}
+
+		if (tokenSupplyType.equals(TokenSupplyType.FIXED) && initialSupply.compareTo(BigDecimal.ZERO) == 0) {
+			throw new IllegalArgumentException("Fixed supply must be greater than 0.");
+		}
+
 		return new CreateTokenAction(tokenRRI, name, description, iconUrl, url, initialSupply, granularity, tokenSupplyType);
 	}
 
@@ -97,6 +106,35 @@ public class CreateTokenAction implements Action {
 	) {
 		return create(tokenRRI, name, description, null, null, initialSupply, granularity, tokenSupplyType);
 	}
+
+	public FixedSupplyTokenDefinitionParticle toFixedSupplyTokenDefinitionParticle() {
+		return new FixedSupplyTokenDefinitionParticle(
+			getRRI().getAddress(),
+			getName(),
+			getRRI().getName(),
+			getDescription(),
+			unitsToSubunits(getInitialSupply()),
+			unitsToSubunits(getGranularity()),
+			getIconUrl(),
+			getUrl()
+		);
+	}
+	public MutableSupplyTokenDefinitionParticle toMutableSupplyTokenDefinitionParticle() {
+		return new MutableSupplyTokenDefinitionParticle(
+			getRRI().getAddress(),
+			getName(),
+			getRRI().getName(),
+			getDescription(),
+			unitsToSubunits(getGranularity()),
+			Map.of(
+				MutableSupplyTokenDefinitionParticle.TokenTransition.MINT, TokenPermission.TOKEN_OWNER_ONLY,
+				MutableSupplyTokenDefinitionParticle.TokenTransition.BURN, TokenPermission.TOKEN_OWNER_ONLY
+			),
+			getIconUrl(),
+			getUrl()
+		);
+	}
+
 
 	public RRI getRRI() {
 		return rri;

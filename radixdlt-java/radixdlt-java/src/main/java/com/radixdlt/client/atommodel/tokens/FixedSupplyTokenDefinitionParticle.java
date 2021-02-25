@@ -23,21 +23,19 @@
 package com.radixdlt.client.atommodel.tokens;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableSet;
 import com.radixdlt.client.atommodel.Identifiable;
 import com.radixdlt.client.atommodel.Ownable;
-import com.radixdlt.identifiers.RadixAddress;
 import com.radixdlt.client.core.atoms.particles.Particle;
 import com.radixdlt.identifiers.EUID;
 import com.radixdlt.identifiers.RRI;
-
-import java.util.Objects;
-import java.util.Set;
-
+import com.radixdlt.identifiers.RadixAddress;
 import com.radixdlt.serialization.DsonOutput;
 import com.radixdlt.serialization.DsonOutput.Output;
 import com.radixdlt.serialization.SerializerId2;
 import com.radixdlt.utils.UInt256;
+
+import java.util.Objects;
+import java.util.Set;
 
 @SerializerId2("radix.particles.fixed_supply_token_definition")
 public final class FixedSupplyTokenDefinitionParticle extends Particle implements Identifiable, Ownable {
@@ -48,11 +46,11 @@ public final class FixedSupplyTokenDefinitionParticle extends Particle implement
 
 	@JsonProperty("name")
 	@DsonOutput(Output.ALL)
-	private String	name;
+	private String name;
 
 	@JsonProperty("description")
 	@DsonOutput(Output.ALL)
-	private String	description;
+	private String description;
 
 	@JsonProperty("supply")
 	@DsonOutput(Output.ALL)
@@ -85,7 +83,7 @@ public final class FixedSupplyTokenDefinitionParticle extends Particle implement
 		String iconUrl,
 		String url
 	) {
-		this(RRI.of(address,  symbol), name, description, supply, granularity, iconUrl, url);
+		this(RRI.of(address, symbol), name, description, supply, granularity, iconUrl, url);
 	}
 
 	public FixedSupplyTokenDefinitionParticle(
@@ -108,7 +106,7 @@ public final class FixedSupplyTokenDefinitionParticle extends Particle implement
 
 	@Override
 	public Set<EUID> getDestinations() {
-		return ImmutableSet.of(this.rri.getAddress().euid());
+		return Set.of(this.rri.getAddress().euid());
 	}
 
 	@Override
@@ -151,8 +149,6 @@ public final class FixedSupplyTokenDefinitionParticle extends Particle implement
 
 	@Override
 	public String toString() {
-		return String.format("%s[%s (%s:%s), (%s/%s)]", getClass().getSimpleName(),
-			String.valueOf(this.rri), name, description,
-			String.valueOf(supply), String.valueOf(granularity));
+		return String.format("%s[%s (%s:%s), (%s/%s)]", getClass().getSimpleName(), this.rri, name, description, supply, granularity);
 	}
 }

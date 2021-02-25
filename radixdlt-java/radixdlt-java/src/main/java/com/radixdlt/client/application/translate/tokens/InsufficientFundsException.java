@@ -24,6 +24,7 @@ package com.radixdlt.client.application.translate.tokens;
 
 import com.radixdlt.client.application.translate.StageActionException;
 import com.radixdlt.identifiers.RRI;
+
 import java.math.BigDecimal;
 
 public class InsufficientFundsException extends StageActionException {
@@ -53,7 +54,7 @@ public class InsufficientFundsException extends StageActionException {
 			return false;
 		}
 
-		InsufficientFundsException o = (InsufficientFundsException) obj;
+		var o = (InsufficientFundsException) obj;
 		return this.tokenDefinitionReference.equals(o.tokenDefinitionReference)
 			&& this.available.compareTo(o.available) == 0
 			&& this.requestedAmount.compareTo(o.requestedAmount) == 0;

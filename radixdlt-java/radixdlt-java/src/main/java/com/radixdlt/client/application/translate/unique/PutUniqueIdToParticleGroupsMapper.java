@@ -28,19 +28,14 @@ import com.radixdlt.client.atommodel.unique.UniqueParticle;
 import com.radixdlt.client.core.atoms.ParticleGroup;
 import com.radixdlt.client.core.atoms.particles.SpunParticle;
 
-import java.util.Collections;
 import java.util.List;
 
 public class PutUniqueIdToParticleGroupsMapper implements StatelessActionToParticleGroupsMapper<PutUniqueIdAction> {
 	@Override
 	public List<ParticleGroup> mapToParticleGroups(PutUniqueIdAction uniqueIdAction) {
-		UniqueParticle uniqueParticle = new UniqueParticle(uniqueIdAction.getRRI().getAddress(), uniqueIdAction.getRRI().getName());
-		RRIParticle rriParticle = new RRIParticle(uniqueParticle.getRRI());
-		return Collections.singletonList(
-			ParticleGroup.of(
-				SpunParticle.down(rriParticle),
-				SpunParticle.up(uniqueParticle)
-			)
-		);
+		var uniqueParticle = UniqueParticle.create(uniqueIdAction.getRRI());
+		var rriParticle = new RRIParticle(uniqueParticle.getRRI());
+
+		return List.of(ParticleGroup.of(SpunParticle.down(rriParticle), SpunParticle.up(uniqueParticle)));
 	}
 }

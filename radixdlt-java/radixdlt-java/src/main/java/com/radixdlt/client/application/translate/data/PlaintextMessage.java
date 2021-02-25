@@ -33,9 +33,16 @@ public final class PlaintextMessage {
 	private final AID aid;
 	private final String message;
 
-	public PlaintextMessage(AID aid, String message) {
-		this.aid = Objects.requireNonNull(aid);
-		this.message = Objects.requireNonNull(message);
+	private PlaintextMessage(AID aid, String message) {
+		this.aid = aid;
+		this.message = message;
+	}
+
+	public static PlaintextMessage create(final AID aid, final String message) {
+		Objects.requireNonNull(aid);
+		Objects.requireNonNull(message);
+
+		return new PlaintextMessage(aid, message);
 	}
 
 	/**
@@ -66,11 +73,13 @@ public final class PlaintextMessage {
 		if (this == obj) {
 			return true;
 		}
-		if (obj instanceof PlaintextMessage) {
-			PlaintextMessage that = (PlaintextMessage) obj;
-			return Objects.equals(this.aid, that.aid) && Objects.equals(this.message, that.message);
+
+		if (!(obj instanceof PlaintextMessage)) {
+			return false;
 		}
-		return false;
+
+		var that = (PlaintextMessage) obj;
+		return Objects.equals(this.aid, that.aid) && Objects.equals(this.message, that.message);
 	}
 
 	@Override

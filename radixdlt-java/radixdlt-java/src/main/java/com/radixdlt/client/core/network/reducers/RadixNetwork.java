@@ -83,7 +83,7 @@ public final class RadixNetwork {
 			newMap = new HashMap<>(state.getNodeStates());
 			newMap.merge(
 				node,
-				RadixNodeState.of(node, WebSocketStatus.valueOf(wsEvent.getType().name())),
+				RadixNodeState.of(node, wsEvent.getStatus()),
 				(old, val) -> RadixNodeState.of(
 					old.getNode(), val.getStatus(), old.getData().orElse(null), old.getUniverseConfig().orElse(null)
 				)

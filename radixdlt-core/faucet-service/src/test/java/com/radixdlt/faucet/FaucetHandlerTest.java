@@ -22,9 +22,6 @@
 
 package com.radixdlt.faucet;
 
-import java.math.BigDecimal;
-import java.util.Random;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,8 +29,8 @@ import org.mockito.InOrder;
 
 import com.google.common.util.concurrent.RateLimiter;
 import com.radixdlt.client.application.RadixApplicationAPI;
-import com.radixdlt.client.application.RadixApplicationAPI.Result;
-import com.radixdlt.client.application.RadixApplicationAPI.Transaction;
+import com.radixdlt.client.application.Result;
+import com.radixdlt.client.application.Transaction;
 import com.radixdlt.client.application.translate.tokens.TransferTokensAction;
 import com.radixdlt.client.application.translate.unique.PutUniqueIdAction;
 import com.radixdlt.crypto.ECKeyPair;
@@ -42,15 +39,18 @@ import com.radixdlt.identifiers.RRI;
 import com.radixdlt.identifiers.RadixAddress;
 import com.radixdlt.utils.Pair;
 
+import java.math.BigDecimal;
+import java.util.Random;
+
+import io.reactivex.Completable;
+import io.reactivex.Observable;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
-
-import io.reactivex.Completable;
-import io.reactivex.Observable;
 
 public class FaucetHandlerTest {
 

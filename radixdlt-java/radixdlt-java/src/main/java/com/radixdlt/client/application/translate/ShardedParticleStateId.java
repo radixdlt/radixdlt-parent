@@ -34,15 +34,15 @@ public final class ShardedParticleStateId {
 	private final RadixAddress address;
 
 	private ShardedParticleStateId(Class<? extends Particle> particleClass, RadixAddress address) {
-		Objects.requireNonNull(particleClass);
-		Objects.requireNonNull(address);
-
 		this.particleClass = particleClass;
 		this.address = address;
 	}
 
-	public static ShardedParticleStateId of(Class<? extends Particle> stateClass, RadixAddress address) {
-		return new ShardedParticleStateId(stateClass, address);
+	public static ShardedParticleStateId of(Class<? extends Particle> particleClass, RadixAddress address) {
+		Objects.requireNonNull(particleClass);
+		Objects.requireNonNull(address);
+
+		return new ShardedParticleStateId(particleClass, address);
 	}
 
 	/**
@@ -69,7 +69,7 @@ public final class ShardedParticleStateId {
 			return false;
 		}
 
-		ShardedParticleStateId r = (ShardedParticleStateId) o;
+		var r = (ShardedParticleStateId) o;
 		return r.particleClass.equals(particleClass) && r.address.equals(address);
 	}
 

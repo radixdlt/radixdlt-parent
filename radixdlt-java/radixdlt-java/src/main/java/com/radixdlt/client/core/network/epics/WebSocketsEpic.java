@@ -26,18 +26,23 @@ import com.radixdlt.client.core.network.RadixNetworkEpic;
 import com.radixdlt.client.core.network.RadixNetworkState;
 import com.radixdlt.client.core.network.RadixNodeAction;
 import com.radixdlt.client.core.network.WebSockets;
-import io.reactivex.Observable;
+
 import java.util.ArrayList;
 import java.util.List;
-
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import io.reactivex.Observable;
 
 /**
  * Epic which manages the store of low level webSockets and connects epics dependent on useage of these webSockets.
  */
 public final class WebSocketsEpic implements RadixNetworkEpic {
+
+	public static WebSocketsEpicBuilder builder() {
+		return new WebSocketsEpicBuilder();
+	}
 
 	/**
 	 * Builds a WebSocketsEpic composed of epics which require websockets. After being built, all epics
@@ -46,6 +51,9 @@ public final class WebSocketsEpic implements RadixNetworkEpic {
 	public static class WebSocketsEpicBuilder {
 		private final List<Function<WebSockets, RadixNetworkEpic>> webSocketEpics = new ArrayList<>();
 		private WebSockets webSockets;
+
+		private WebSocketsEpicBuilder() {
+		}
 
 		public WebSocketsEpicBuilder add(Function<WebSockets, RadixNetworkEpic> webSocketEpic) {
 			webSocketEpics.add(webSocketEpic);

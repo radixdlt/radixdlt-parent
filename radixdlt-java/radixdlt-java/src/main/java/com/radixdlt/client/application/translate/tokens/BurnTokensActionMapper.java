@@ -22,31 +22,24 @@
 
 package com.radixdlt.client.application.translate.tokens;
 
-import com.radixdlt.client.application.translate.StageActionException;
 import com.radixdlt.client.application.translate.ShardedParticleStateId;
-import com.radixdlt.client.atommodel.tokens.MutableSupplyTokenDefinitionParticle.TokenTransition;
-import com.radixdlt.client.atommodel.tokens.TokenPermission;
-import com.radixdlt.client.atommodel.tokens.UnallocatedTokensParticle;
-import com.radixdlt.client.core.atoms.particles.SpunParticle;
-import com.radixdlt.client.core.fungible.FungibleTransitionMapper;
-import com.radixdlt.identifiers.RRI;
-import com.radixdlt.client.core.fungible.NotEnoughFungiblesException;
-import java.math.BigDecimal;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+import com.radixdlt.client.application.translate.StageActionException;
+import com.radixdlt.client.application.translate.StatefulActionToParticleGroupsMapper;
 import com.radixdlt.client.atommodel.tokens.TransferrableTokensParticle;
+import com.radixdlt.client.atommodel.tokens.UnallocatedTokensParticle;
 import com.radixdlt.client.core.atoms.ParticleGroup;
 import com.radixdlt.client.core.atoms.particles.Particle;
-
-import com.radixdlt.client.application.translate.StatefulActionToParticleGroupsMapper;
-import com.radixdlt.identifiers.RadixAddress;
-
-import java.util.stream.Stream;
+import com.radixdlt.client.core.atoms.particles.SpunParticle;
+import com.radixdlt.client.core.fungible.FungibleTransitionMapper;
+import com.radixdlt.client.core.fungible.NotEnoughFungiblesException;
 import com.radixdlt.utils.UInt256;
+
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static com.radixdlt.client.application.translate.tokens.TokenUnitConversions.unitsToSubunits;
 
 public class BurnTokensActionMapper implements StatefulActionToParticleGroupsMapper<BurnTokensAction> {
 	public BurnTokensActionMapper() {
@@ -56,16 +49,17 @@ public class BurnTokensActionMapper implements StatefulActionToParticleGroupsMap
 	private static List<SpunParticle> mapToParticles(BurnTokensAction burn, List<TransferrableTokensParticle> currentParticles)
 		throws NotEnoughFungiblesException {
 
-		final UInt256 totalAmountToBurn = TokenUnitConversions.unitsToSubunits(burn.getAmount());
+		final var totalAmountToBurn = unitsToSubunits(burn.getAmount());
+
 		if (currentParticles.isEmpty()) {
 			throw new NotEnoughFungiblesException(totalAmountToBurn, UInt256.ZERO);
 		}
 
-		final RRI token = currentParticles.get(0).getTokenDefinitionReference();
-		final UInt256 granularity = currentParticles.get(0).getGranularity();
-		final Map<TokenTransition, TokenPermission> permissions = currentParticles.get(0).getTokenPermissions();
+		final var token = currentParticles.get(0).getTokenDefinitionReference();
+		final var granularity = currentParticles.get(0).getGranularity();
+		final var permissions = currentParticles.get(0).getTokenPermissions();
 
-		FungibleTransitionMapper<TransferrableTokensParticle, UnallocatedTokensParticle> mapper = new FungibleTransitionMapper<>(
+		var mapper = new FungibleTransitionMapper<>(
 			TransferrableTokensParticle::getAmount,
 			amt ->
 				new TransferrableTokensParticle(
@@ -92,32 +86,30 @@ public class BurnTokensActionMapper implements StatefulActionToParticleGroupsMap
 
 	@Override
 	public Set<ShardedParticleStateId> requiredState(BurnTokensAction burnTokensAction) {
-		RadixAddress address = burnTokensAction.getAddress();
-		return Collections.singleton(ShardedParticleStateId.of(TransferrableTokensParticle.class, address));
+		var address = burnTokensAction.getAddress();
+		return Set.of(ShardedParticleStateId.of(TransferrableTokensParticle.class, address));
 	}
 
 	@Override
-	public List<ParticleGroup> mapToParticleGroups(BurnTokensAction burnTokensAction, Stream<Particle> store) throws StageActionException {
+	public List<ParticleGroup> mapToParticleGroups(BurnTokensAction burnTokensAction, Stream<Particle> store)
+		throws StageActionException {
+
 		if (burnTokensAction.getAmount().signum() <= 0) {
 			throw new IllegalArgumentException("Burn amount must be greater than 0.");
 		}
 
-		final RRI tokenRef = burnTokensAction.getRRI();
-		final BigDecimal burnAmount = burnTokensAction.getAmount();
-
-		final List<TransferrableTokensParticle> currentParticles = store.map(TransferrableTokensParticle.class::cast)
+		final var tokenRef = burnTokensAction.getRRI();
+		final var burnAmount = burnTokensAction.getAmount();
+		final var currentParticles = store.map(TransferrableTokensParticle.class::cast)
 			.filter(p -> p.getTokenDefinitionReference().equals(tokenRef))
 			.collect(Collectors.toList());
 
-		final List<SpunParticle> burnParticles;
 		try {
-			burnParticles = mapToParticles(burnTokensAction, currentParticles);
+			final var burnParticles = mapToParticles(burnTokensAction, currentParticles);
+			return List.of(ParticleGroup.of(burnParticles));
 		} catch (NotEnoughFungiblesException e) {
 			throw new InsufficientFundsException(tokenRef, TokenUnitConversions.subunitsToUnits(e.getCurrent()), burnAmount);
 		}
 
-		return Collections.singletonList(
-			ParticleGroup.of(burnParticles)
-		);
 	}
 }

@@ -17,6 +17,8 @@
 
 package com.radix.regression;
 
+import org.junit.Test;
+
 import com.google.common.collect.ImmutableSet;
 import com.radixdlt.client.application.RadixApplicationAPI;
 import com.radixdlt.client.application.identity.RadixIdentities;
@@ -28,18 +30,18 @@ import com.radixdlt.client.core.network.RadixNetworkState;
 import com.radixdlt.client.core.network.RadixNode;
 import com.radixdlt.client.core.network.bootstrap.NodeFinder;
 import com.radixdlt.client.core.network.epics.DiscoverNodesEpic;
-import io.reactivex.observers.TestObserver;
-import java.util.Collections;
+
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import org.junit.Test;
+
+import io.reactivex.observers.TestObserver;
 
 public class BootstrapTest {
 	@Test
 	public void when_bootstrap_with_down_node_finder__api_should_not_crash() throws InterruptedException {
-		NodeFinder nodeFinder = new NodeFinder("https://notexist.radixdlt.com/bad-url", 443);
-		RadixApplicationAPI api = RadixApplicationAPI.create(new BootstrapConfig() {
+		var nodeFinder = NodeFinder.create("https://notexist.radixdlt.com/bad-url", 443);
+		var api = RadixApplicationAPI.create(new BootstrapConfig() {
 			@Override
 			public RadixUniverseConfig getConfig() {
 				return RadixEnv.getBootstrapConfig().getConfig();
@@ -47,9 +49,9 @@ public class BootstrapTest {
 
 			@Override
 			public List<RadixNetworkEpic> getDiscoveryEpics() {
-				return Collections.singletonList(
-					new DiscoverNodesEpic(nodeFinder.getSeed().toObservable(), RadixEnv.getBootstrapConfig().getConfig())
-				);
+				return List.of(DiscoverNodesEpic.create(
+					nodeFinder.getSeed().toObservable(), RadixEnv.getBootstrapConfig().getConfig()
+				));
 			}
 
 			@Override
@@ -59,7 +61,9 @@ public class BootstrapTest {
 		}, RadixIdentities.createNew());
 
 		api.pull();
-		TestObserver<RadixNetworkState> testObserver = TestObserver.create();
+
+		var testObserver = TestObserver.<RadixNetworkState>create();
+
 		api.getNetworkState().subscribe(testObserver);
 		testObserver.await(5, TimeUnit.SECONDS);
 		testObserver.assertNoErrors();

@@ -22,8 +22,10 @@
 
 package com.radixdlt.client.core.network.epics;
 
+import com.radixdlt.client.core.network.RadixNetworkEpic;
 import com.radixdlt.client.core.network.RadixNetworkState;
 import com.radixdlt.client.core.network.RadixNode;
+import com.radixdlt.client.core.network.RadixNodeAction;
 import com.radixdlt.client.core.network.WebSockets;
 import com.radixdlt.client.core.network.actions.GetLivePeersRequestAction;
 import com.radixdlt.client.core.network.actions.GetLivePeersResultAction;
@@ -34,13 +36,13 @@ import com.radixdlt.client.core.network.actions.GetUniverseResponseAction;
 import com.radixdlt.client.core.network.actions.JsonRpcMethodAction;
 import com.radixdlt.client.core.network.actions.JsonRpcResultAction;
 import com.radixdlt.client.core.network.jsonrpc.RadixJsonRpcClient;
-import com.radixdlt.client.core.network.RadixNetworkEpic;
-import com.radixdlt.client.core.network.RadixNodeAction;
-import com.radixdlt.client.core.network.websocket.WebSocketStatus;
 import com.radixdlt.client.core.network.websocket.WebSocketClient;
+import com.radixdlt.client.core.network.websocket.WebSocketStatus;
+
+import java.util.function.BiFunction;
+
 import io.reactivex.Observable;
 import io.reactivex.Single;
-import java.util.function.BiFunction;
 
 /**
  * Epic which executes Json Rpc methods over the websocket as Json Rpc requests come in. The responses
@@ -51,10 +53,11 @@ public final class RadixJsonRpcMethodEpic<T extends JsonRpcMethodAction> impleme
 	private final BiFunction<RadixJsonRpcClient, T, Single<JsonRpcResultAction<?>>> methodCall;
 	private final Class<T> methodClass;
 
-	public RadixJsonRpcMethodEpic(
+	private RadixJsonRpcMethodEpic(
 		WebSockets webSockets,
 		BiFunction<RadixJsonRpcClient, T, Single<JsonRpcResultAction<?>>> methodCall,
-		Class<T> methodClass) {
+		Class<T> methodClass
+	) {
 		this.webSockets = webSockets;
 		this.methodCall = methodCall;
 		this.methodClass = methodClass;
@@ -78,16 +81,16 @@ public final class RadixJsonRpcMethodEpic<T extends JsonRpcMethodAction> impleme
 		return actions
 			.ofType(methodClass)
 			.flatMapSingle(m ->
-				this.waitForConnection(m.getNode())
-					.map(RadixJsonRpcClient::new)
-					.flatMap(c -> methodCall.apply(c, m))
+							   this.waitForConnection(m.getNode())
+								   .map(RadixJsonRpcClient::new)
+								   .flatMap(c -> methodCall.apply(c, m))
 			);
 	}
 
 	public static RadixNetworkEpic createGetLivePeersEpic(WebSockets ws) {
 		return new RadixJsonRpcMethodEpic<>(
 			ws,
-			(client, action) -> client.getLivePeers().map(l -> GetLivePeersResultAction.of(action.getNode(), l)),
+			(client, action) -> client.getLivePeers().map(l -> GetLivePeersResultAction.create(action.getNode(), l)),
 			GetLivePeersRequestAction.class
 		);
 	}
@@ -95,7 +98,7 @@ public final class RadixJsonRpcMethodEpic<T extends JsonRpcMethodAction> impleme
 	public static RadixNetworkEpic createGetNodeDataEpic(WebSockets ws) {
 		return new RadixJsonRpcMethodEpic<>(
 			ws,
-			(client, action) -> client.getInfo().map(l -> GetNodeDataResultAction.of(action.getNode(), l)),
+			(client, action) -> client.getInfo().map(l -> GetNodeDataResultAction.create(action.getNode(), l)),
 			GetNodeDataRequestAction.class
 		);
 	}
@@ -103,7 +106,7 @@ public final class RadixJsonRpcMethodEpic<T extends JsonRpcMethodAction> impleme
 	public static RadixNetworkEpic createGetUniverseEpic(WebSockets ws) {
 		return new RadixJsonRpcMethodEpic<>(
 			ws,
-			(client, action) -> client.universe().map(u -> GetUniverseResponseAction.of(action.getNode(), u)),
+			(client, action) -> client.universe().map(u -> GetUniverseResponseAction.create(action.getNode(), u)),
 			GetUniverseRequestAction.class
 		);
 	}

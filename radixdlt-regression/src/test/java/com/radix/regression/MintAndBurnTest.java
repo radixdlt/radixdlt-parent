@@ -17,9 +17,11 @@
 
 package com.radix.regression;
 
+import org.junit.Test;
+
 import com.radix.test.utils.TokenUtilities;
 import com.radixdlt.client.application.RadixApplicationAPI;
-import com.radixdlt.client.application.RadixApplicationAPI.Result;
+import com.radixdlt.client.application.Result;
 import com.radixdlt.client.application.identity.RadixIdentities;
 import com.radixdlt.client.application.translate.tokens.BurnTokensAction;
 import com.radixdlt.client.application.translate.tokens.CreateTokenAction;
@@ -27,12 +29,12 @@ import com.radixdlt.client.application.translate.tokens.CreateTokenAction.TokenS
 import com.radixdlt.client.application.translate.tokens.MintTokensAction;
 import com.radixdlt.client.application.translate.tokens.TokenUnitConversions;
 import com.radixdlt.client.core.RadixEnv;
-import com.radixdlt.identifiers.RRI;
 import com.radixdlt.client.core.network.RadixNetworkState;
 import com.radixdlt.client.core.network.RadixNode;
-import java.math.BigDecimal;
-import org.junit.Test;
+import com.radixdlt.identifiers.RRI;
 import com.radixdlt.utils.UInt256;
+
+import java.math.BigDecimal;
 
 public class MintAndBurnTest {
 	@Test

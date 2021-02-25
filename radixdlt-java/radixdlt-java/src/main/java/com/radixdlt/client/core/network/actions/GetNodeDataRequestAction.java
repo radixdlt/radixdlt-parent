@@ -23,6 +23,7 @@
 package com.radixdlt.client.core.network.actions;
 
 import com.radixdlt.client.core.network.RadixNode;
+
 import java.util.Objects;
 
 /**
@@ -32,11 +33,11 @@ public final class GetNodeDataRequestAction implements JsonRpcMethodAction {
 	private final RadixNode node;
 
 	private GetNodeDataRequestAction(RadixNode node) {
-		Objects.requireNonNull(node);
 		this.node = node;
 	}
 
-	public static GetNodeDataRequestAction of(RadixNode node) {
+	public static GetNodeDataRequestAction create(RadixNode node) {
+		Objects.requireNonNull(node);
 		return new GetNodeDataRequestAction(node);
 	}
 

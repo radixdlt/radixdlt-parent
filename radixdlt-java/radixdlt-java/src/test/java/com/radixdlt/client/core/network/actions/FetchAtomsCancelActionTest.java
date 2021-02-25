@@ -31,10 +31,10 @@ import org.junit.Test;
 public class FetchAtomsCancelActionTest {
 	@Test
 	public void when_initializing_with_null__npe_is_thrown() {
-		assertThatThrownBy(() -> FetchAtomsCancelAction.of(null, mock(RadixAddress.class)))
+		assertThatThrownBy(() -> FetchAtomsCancelAction.create(null, mock(RadixAddress.class)))
 			.isInstanceOf(NullPointerException.class);
 
-		assertThatThrownBy(() -> FetchAtomsCancelAction.of("Hi", null))
+		assertThatThrownBy(() -> FetchAtomsCancelAction.create("Hi", null))
 			.isInstanceOf(NullPointerException.class);
 	}
 }
