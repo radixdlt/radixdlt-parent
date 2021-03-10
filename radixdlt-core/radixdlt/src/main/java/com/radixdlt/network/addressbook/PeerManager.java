@@ -392,7 +392,7 @@ public class PeerManager {
 
 	private boolean nudge(TransportInfo transportInfo) {
 		try {
-			log.trace("Nudging {}", transportInfo);
+			log.debug("Nudging {}", transportInfo);
 			final PeerPingMessage ping = new PeerPingMessage(this.universeMagic, 0L, System.nanoTime(), localSystem);
 			messageCentral.sendSystemMessage(transportInfo, ping);
 			return true;
@@ -416,9 +416,12 @@ public class PeerManager {
 
 	private void discoverPeers() {
 		// Probe all the bootstrap hosts not in the address book so that they know about us
-		bootstrapDiscovery.discoveryHosts().stream()
+		var transports = bootstrapDiscovery.discoveryHosts().stream()
 			.filter(ti -> this.addressbook.peer(ti).isEmpty())
-			.forEachOrdered(this::nudge);
+			.collect(Collectors.toSet());
+
+		log.debug("Transports to nudge: {}", transports.size());
+		transports.forEach(this::nudge);
 	}
 
 	private String formatNonce(long nonce) {
