@@ -49,6 +49,7 @@ import org.radix.universe.system.LocalSystem;
 import org.radix.universe.system.SystemMessage;
 
 import java.security.SecureRandom;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -121,6 +122,7 @@ public class PeerManager {
 
 				numProbes = Math.min(numProbes, peersToProbe.size());
 				if (numProbes > 0) {
+					Collections.shuffle(peersToProbe);
 					List<PeerWithSystem> toProbe = peersToProbe.subList(0, numProbes);
 					toProbe.forEach(PeerManager.this::probe);
 					toProbe.clear();
