@@ -49,7 +49,6 @@ import org.radix.universe.system.LocalSystem;
 import org.radix.universe.system.SystemMessage;
 
 import java.security.SecureRandom;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -111,7 +110,7 @@ public class PeerManager {
 				long recencyInSeconds = TimeUnit.MILLISECONDS.toSeconds(recencyThreshold);
 				int numProbes = (int) (this.numPeers / Math.max(1, recencyInSeconds));
 
-				numProbes = Math.max(numProbes, 16);
+				numProbes = Math.max(numProbes, 64);
 
 				if (peersToProbe.isEmpty()) {
 					addressbook.peers()
@@ -122,7 +121,6 @@ public class PeerManager {
 
 				numProbes = Math.min(numProbes, peersToProbe.size());
 				if (numProbes > 0) {
-					Collections.shuffle(peersToProbe);
 					List<PeerWithSystem> toProbe = peersToProbe.subList(0, numProbes);
 					toProbe.forEach(PeerManager.this::probe);
 					toProbe.clear();
