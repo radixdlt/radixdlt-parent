@@ -27,7 +27,10 @@ import com.radixdlt.network.transport.TransportMetadata;
 import com.radixdlt.network.transport.TransportOutboundConnection;
 import com.radixdlt.network.transport.tcp.TCPConstants;
 import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.processors.PublishProcessor;
+import io.reactivex.rxjava3.subjects.PublishSubject;
+import io.reactivex.rxjava3.subjects.Subject;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -62,14 +65,14 @@ public class MessagingDummyConfigurations {
 
 		private final TransportOutboundConnection out;
 
-		private final PublishProcessor<InboundMessage> messagePublishProcessor = PublishProcessor.create();
+		private final Subject<InboundMessage> messagePublishProcessor = PublishSubject.create();
 
 		public DummyTransport(TransportOutboundConnection out) {
 			this.out = out;
 		}
 
 		@Override
-		public Flowable<InboundMessage> start() {
+		public Observable<InboundMessage> start() {
 			return messagePublishProcessor;
 		}
 

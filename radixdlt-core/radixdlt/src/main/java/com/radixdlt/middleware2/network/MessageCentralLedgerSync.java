@@ -27,6 +27,7 @@ import com.radixdlt.sync.messages.remote.StatusRequest;
 import com.radixdlt.sync.messages.remote.StatusResponse;
 import com.radixdlt.sync.messages.remote.SyncRequest;
 import com.radixdlt.sync.messages.remote.SyncResponse;
+import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
 import java.util.Objects;
 import javax.inject.Inject;
@@ -56,7 +57,8 @@ public final class MessageCentralLedgerSync {
 			.map(m -> {
 				final var node = BFTNode.create(m.getPeer().getSystem().getKey());
 				return RemoteEvent.create(node, StatusRequest.create(), StatusRequest.class);
-			});
+			})
+			.toFlowable(BackpressureStrategy.ERROR);
 	}
 
 	public Flowable<RemoteEvent<StatusResponse>> statusResponses() {
@@ -66,7 +68,8 @@ public final class MessageCentralLedgerSync {
 				final var node = BFTNode.create(m.getPeer().getSystem().getKey());
 				final var msg = m.getMessage();
 				return RemoteEvent.create(node, StatusResponse.create(msg.getHeader()), StatusResponse.class);
-			});
+			})
+			.toFlowable(BackpressureStrategy.ERROR);
 	}
 
 	public Flowable<RemoteEvent<SyncRequest>> syncRequests() {
@@ -76,7 +79,8 @@ public final class MessageCentralLedgerSync {
 				final var node = BFTNode.create(m.getPeer().getSystem().getKey());
 				final var msg = m.getMessage();
 				return RemoteEvent.create(node, SyncRequest.create(msg.getCurrentHeader()), SyncRequest.class);
-			});
+			})
+			.toFlowable(BackpressureStrategy.ERROR);
 	}
 
 	public Flowable<RemoteEvent<SyncResponse>> syncResponses() {
@@ -86,7 +90,8 @@ public final class MessageCentralLedgerSync {
 				final var node = BFTNode.create(m.getPeer().getSystem().getKey());
 				final var msg = m.getMessage();
 				return RemoteEvent.create(node, SyncResponse.create(msg.getCommands()), SyncResponse.class);
-			});
+			})
+			.toFlowable(BackpressureStrategy.ERROR);
 	}
 
 	public RemoteEventDispatcher<SyncRequest> syncRequestDispatcher() {

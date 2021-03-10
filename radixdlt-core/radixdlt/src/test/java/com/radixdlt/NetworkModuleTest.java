@@ -43,6 +43,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.Observable;
 import org.junit.Test;
 
 public class NetworkModuleTest {
@@ -50,7 +51,7 @@ public class NetworkModuleTest {
 		@Override
 		protected void configure() {
 			final MessageCentral messageCentral = mock(MessageCentral.class);
-			when(messageCentral.messagesOf(any())).thenReturn(Flowable.empty());
+			when(messageCentral.messagesOf(any())).thenReturn(Observable.empty());
 
 			bind(BFTNode.class).annotatedWith(Self.class).toInstance(mock(BFTNode.class));
 			bind(AddressBook.class).toInstance(mock(AddressBook.class));

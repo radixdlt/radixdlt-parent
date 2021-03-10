@@ -32,6 +32,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import com.radixdlt.network.messaging.MessageFromPeer;
+import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.processors.PublishProcessor;
 import org.apache.logging.log4j.LogManager;
@@ -82,8 +83,9 @@ public final class MessageCentralBFTNetwork implements ProposalBroadcaster, BFTE
 		return this.messageCentral
 			.messagesOf(ConsensusEventMessage.class)
 			.map(MessageFromPeer::getMessage)
-			.map(ConsensusEventMessage::getConsensusMessage);
-	}
+			.map(ConsensusEventMessage::getConsensusMessage)
+			.toFlowable(BackpressureStrategy.ERROR);
+}
 
 	@Override
 	public void broadcastProposal(Proposal proposal, Set<BFTNode> nodes) {
