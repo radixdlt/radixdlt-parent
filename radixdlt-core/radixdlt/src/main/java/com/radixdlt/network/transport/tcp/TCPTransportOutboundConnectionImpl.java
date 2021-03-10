@@ -69,6 +69,7 @@ final class TCPTransportOutboundConnectionImpl implements TransportOutboundConne
 				if (cause == null) {
 					cfsr.complete(SendResult.complete());
 				} else {
+					cause.printStackTrace();
 					cfsr.complete(SendResult.failure(cause));
 				}
 			});

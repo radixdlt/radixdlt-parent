@@ -98,7 +98,7 @@ class MessageDispatcher {
 	}
 
 	private CompletableFuture<SendResult> send(TransportOutboundConnection conn, Message message, byte[] bytes) {
-		log.trace("Sending to {}: {}", conn, message);
+		log.info("Sending to {}: {}", conn, message);
 		this.counters.add(CounterType.NETWORKING_SENT_BYTES, bytes.length);
 		return conn.send(bytes);
 	}
