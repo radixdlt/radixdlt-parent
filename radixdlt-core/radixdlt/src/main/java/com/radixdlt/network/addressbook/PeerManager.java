@@ -107,17 +107,20 @@ public class PeerManager {
 		@Override
 		public void run() {
 			try {
-				long recencyInSeconds = TimeUnit.MILLISECONDS.toSeconds(recencyThreshold);
-				int numProbes = (int) (this.numPeers / Math.max(1, recencyInSeconds));
+				//long recencyInSeconds = TimeUnit.MILLISECONDS.toSeconds(recencyThreshold);
+				//int numProbes = (int) (this.numPeers / Math.max(1, recencyInSeconds));
 
-				numProbes = Math.max(numProbes, 64);
+				int numProbes = 64;//Math.max(numProbes, 64);
 
-				if (peersToProbe.isEmpty()) {
+				//if (peersToProbe.isEmpty()) {
+				peersToProbe.clear();
 					addressbook.peers()
 						.filter(StandardFilters.standardFilter(localSystem.getNID(), whitelist))
 						.forEachOrdered(peersToProbe::add);
 					this.numPeers = peersToProbe.size();
-				}
+				//}
+
+				log.info("Probing {} peers...", numPeers);
 
 				numProbes = Math.min(numProbes, peersToProbe.size());
 				if (numProbes > 0) {
