@@ -18,6 +18,9 @@
 package com.radixdlt.client.lib;
 
 import com.radixdlt.client.AccountAddress;
+import com.radixdlt.client.lib.api.RadixApi;
+import com.radixdlt.client.lib.dto.TokenBalancesDTO;
+import com.radixdlt.client.lib.impl.SynchronousRadixApiClient;
 import com.radixdlt.identifiers.REAddr;
 import com.radixdlt.utils.Pair;
 import com.radixdlt.utils.UInt384;
@@ -57,7 +60,7 @@ public class BalanceVerifier {
 			.onSuccess(cmd -> {
 				var baseUrl = ofNullable(cmd.getOptionValue('h')).orElse(DEFAULT_HOST);
 
-				NodeClient.connect(baseUrl)
+				SynchronousRadixApiClient.connect(baseUrl)
 					.onSuccess(client -> {
 						retrieveBalance(client, REAddr.ofPubKeyAccount(pubkeyOf(1)));
 						retrieveBalance(client, REAddr.ofPubKeyAccount(pubkeyOf(2)));
@@ -73,16 +76,18 @@ public class BalanceVerifier {
 			});
 	}
 
-	private void retrieveBalance(NodeClient client, REAddr addr) {
-		client.callTokenBalances(addr).onSuccess(balances -> printBalances(addr, balances));
+	private void retrieveBalance(RadixApi client, REAddr addr) {
+		client.tokenBalances(addr).onSuccess(this::printBalances);
 	}
 
-	private void printBalances(REAddr addr, List<Pair<String, UInt384>> balances) {
-		System.out.println("Owner: " + AccountAddress.of(addr));
-		if (balances.isEmpty()) {
+	private void printBalances(TokenBalancesDTO balances) {
+		System.out.println("Owner: " + AccountAddress.of(balances.getOwner()));
+		if (balances.getTokenBalances().isEmpty()) {
 			System.out.println("(empty balances)");
 		} else {
-			balances.forEach(balance -> System.out.printf("    %s : %s", balance.getFirst(), balance.getSecond()));
+			balances.getTokenBalances()
+				.forEach(balance ->
+							 System.out.printf("    %s : %s", balance.getRri(), balance.getAmount()));
 		}
 		System.out.println();
 	}

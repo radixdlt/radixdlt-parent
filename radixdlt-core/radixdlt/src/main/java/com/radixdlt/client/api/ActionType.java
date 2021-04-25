@@ -17,6 +17,8 @@
 
 package com.radixdlt.client.api;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
@@ -50,6 +52,7 @@ public enum ActionType {
 		return text;
 	}
 
+	@JsonCreator
 	public static Optional<ActionType> fromString(String action) {
 		return Optional.ofNullable(TO_ACTION_TYPE.get(action));
 	}
