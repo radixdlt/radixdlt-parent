@@ -18,16 +18,26 @@
 package com.radixdlt.client.lib.api;
 
 import com.radixdlt.client.Rri;
+import com.radixdlt.client.ValidatorAddress;
+import com.radixdlt.client.lib.dto.BuiltTransactionDTO;
 import com.radixdlt.client.lib.dto.NetworkIdDTO;
+import com.radixdlt.client.lib.dto.StakePositionsDTO;
 import com.radixdlt.client.lib.dto.TokenBalancesDTO;
 import com.radixdlt.client.lib.dto.TokenInfoDTO;
 import com.radixdlt.client.lib.dto.TransactionDTO;
 import com.radixdlt.client.lib.dto.TransactionHistoryDTO;
+import com.radixdlt.client.lib.dto.TransactionStatusDTO;
+import com.radixdlt.client.lib.dto.UnstakePositionsDTO;
+import com.radixdlt.client.lib.dto.ValidatorDTO;
+import com.radixdlt.client.lib.dto.ValidatorsResponseDTO;
 import com.radixdlt.client.lib.impl.SynchronousRadixApiClient;
 import com.radixdlt.crypto.ECPublicKey;
 import com.radixdlt.identifiers.AID;
 import com.radixdlt.identifiers.REAddr;
 import com.radixdlt.utils.functional.Result;
+
+import java.util.List;
+import java.util.Optional;
 
 public interface RadixApi {
 	static Result<RadixApi> connect(String baseUrl) {
@@ -40,14 +50,14 @@ public interface RadixApi {
 	Result<TokenBalancesDTO> tokenBalances(REAddr address);
 	Result<TransactionHistoryDTO> transactionHistory(REAddr address);
 	Result<TransactionDTO> lookupTransaction(AID txId);
-	//Result<> stakePositions(REAddr address);
-	//Result<> unstakePositions(REAddr address);
-	//Result<> statusOfTransaction(AID txId);
-	//Result<> networkTransactionThroughput();
-	//Result<> networkTransactionDemand();
-	//Result<> validators();
-	//Result<> lookupValidator();
-	//Result<> buildTransaction();
+	Result<List<StakePositionsDTO>> stakePositions(REAddr address);
+	Result<List<UnstakePositionsDTO>> unstakePositions(REAddr address);
+	Result<TransactionStatusDTO> statusOfTransaction(AID txId);
+	Result<Long> networkTransactionThroughput();
+	Result<Long> networkTransactionDemand();
+	Result<ValidatorsResponseDTO> validators(int size, Optional<NavigationCursor> cursor);
+	Result<ValidatorDTO> lookupValidator(String validatorAddress);
+	Result<BuiltTransactionDTO> buildTransaction(TransactionRequest request);
 	//Result<> finalizeTransaction();
 	//Result<> submitTransaction();
 

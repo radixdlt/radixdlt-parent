@@ -19,7 +19,6 @@ package com.radixdlt.client.lib.dto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.radixdlt.client.Rri;
 import com.radixdlt.client.api.ActionType;
 import com.radixdlt.identifiers.REAddr;
 import com.radixdlt.utils.UInt256;
@@ -28,14 +27,25 @@ import java.util.Objects;
 import java.util.Optional;
 
 public class ActionDTO {
+	@JsonProperty("type")
 	private final ActionType type;
-	private final REAddr from;
-	private final REAddr to;
-	private final REAddr validator;
-	private final UInt256 amount;
-	private final Rri rri;
 
-	private ActionDTO(ActionType type, REAddr from, REAddr to, REAddr validator, UInt256 amount, Rri rri) {
+	@JsonProperty("from")
+	private final REAddr from;
+
+	@JsonProperty("to")
+	private final REAddr to;
+
+	@JsonProperty("validator")
+	private final REAddr validator;
+
+	@JsonProperty("amount")
+	private final UInt256 amount;
+
+	@JsonProperty("rri")
+	private final String rri;
+
+	private ActionDTO(ActionType type, REAddr from, REAddr to, REAddr validator, UInt256 amount, String rri) {
 		this.type = type;
 		this.from = from;
 		this.to = to;
@@ -51,9 +61,22 @@ public class ActionDTO {
 		@JsonProperty("to") REAddr to,
 		@JsonProperty("validator") REAddr validator,
 		@JsonProperty("amount") UInt256 amount,
-		@JsonProperty("rri") Rri rri
+		@JsonProperty("rri") String rri
 	) {
 		return new ActionDTO(type, from, to, validator, amount, rri);
+	}
+
+	//TODO: add remaining actions
+	public static ActionDTO transfer(REAddr from, REAddr to, UInt256 amount, String rri) {
+		return create(ActionType.TRANSFER, from, to, null, amount, rri);
+	}
+
+	public static ActionDTO stake(REAddr from, REAddr validator, UInt256 amount) {
+		return create(ActionType.STAKE, from, null, validator, amount, null);
+	}
+
+	public static ActionDTO unstake(REAddr from, REAddr validator, UInt256 amount) {
+		return create(ActionType.UNSTAKE, from, null, validator, amount, null);
 	}
 
 	@Override
@@ -111,7 +134,7 @@ public class ActionDTO {
 		return Optional.ofNullable(amount);
 	}
 
-	public Optional<Rri> getRri() {
+	public Optional<String> getRri() {
 		return Optional.ofNullable(rri);
 	}
 }

@@ -19,23 +19,24 @@ package com.radixdlt.client.lib.dto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.radixdlt.client.lib.api.NavigationCursor;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
 public class TransactionHistoryDTO {
-	private String cursor;
+	private NavigationCursor cursor;
 	private List<TransactionDTO> transactions;
 
-	private TransactionHistoryDTO(String cursor, List<TransactionDTO> transactions) {
+	private TransactionHistoryDTO(NavigationCursor cursor, List<TransactionDTO> transactions) {
 		this.cursor = cursor;
 		this.transactions = transactions;
 	}
 
 	@JsonCreator
 	public static TransactionHistoryDTO create(
-		@JsonProperty("cursor") String cursor,
+		@JsonProperty("cursor") NavigationCursor cursor,
 		@JsonProperty(value = "transactions", required = true) List<TransactionDTO> transactions
 	) {
 		return new TransactionHistoryDTO(cursor, transactions);
@@ -64,7 +65,7 @@ public class TransactionHistoryDTO {
 		return "TransactionHistory(" + "cursor=" + cursor + ", transactions=" + transactions + ')';
 	}
 
-	public Optional<String> getCursor() {
+	public Optional<NavigationCursor> getCursor() {
 		return Optional.ofNullable(cursor);
 	}
 
