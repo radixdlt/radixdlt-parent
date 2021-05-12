@@ -17,6 +17,7 @@
 
 package com.radixdlt.client.store.berkeley;
 
+import com.radixdlt.sync.messages.local.SyncCheckTrigger;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -134,7 +135,6 @@ public class BerkeleyClientApiStore implements ClientApiStore {
 	private final SystemCounters systemCounters;
 	private final ScheduledEventDispatcher<ScheduledQueueFlush> scheduledFlushEventDispatcher;
 	private final StackingCollector<AtomsCommittedToLedger> txCollector = StackingCollector.create();
-	private final Observable<AtomsCommittedToLedger> ledgerCommitted;
 	private final AtomicLong inputCounter = new AtomicLong();
 	private final CompositeDisposable disposable = new CompositeDisposable();
 	private final AtomicReference<Instant> currentTimestamp = new AtomicReference<>(NOW);
@@ -160,7 +160,6 @@ public class BerkeleyClientApiStore implements ClientApiStore {
 		Serialization serialization,
 		SystemCounters systemCounters,
 		ScheduledEventDispatcher<ScheduledQueueFlush> scheduledFlushEventDispatcher,
-		Observable<AtomsCommittedToLedger> ledgerCommitted,
 		TransactionParser transactionParser
 	) {
 		this.dbEnv = dbEnv;
@@ -170,7 +169,6 @@ public class BerkeleyClientApiStore implements ClientApiStore {
 		this.serialization = serialization;
 		this.systemCounters = systemCounters;
 		this.scheduledFlushEventDispatcher = scheduledFlushEventDispatcher;
-		this.ledgerCommitted = ledgerCommitted;
 		this.transactionParser = transactionParser;
 
 		open();
@@ -490,8 +488,6 @@ public class BerkeleyClientApiStore implements ClientApiStore {
 
 			scheduledFlushEventDispatcher.dispatch(ScheduledQueueFlush.create(), DEFAULT_FLUSH_INTERVAL);
 
-			disposable.add(ledgerCommitted.subscribe(this::newBatch));
-
 		} catch (Exception e) {
 			throw new ClientApiStoreException("Error while opening databases", e);
 		}
@@ -519,6 +515,10 @@ public class BerkeleyClientApiStore implements ClientApiStore {
 		log.info("Database rebuilding is started");
 		store.forEach(txn -> txnParser.parseTxn(txn).onSuccess(this::processRETransaction));
 		log.info("Database rebuilding is finished successfully");
+	}
+
+	public EventProcessor<AtomsCommittedToLedger> newBatchEventProcessor() {
+		return this::newBatch;
 	}
 
 	private void newBatch(AtomsCommittedToLedger transactions) {

@@ -39,6 +39,7 @@ import com.radixdlt.environment.Runners;
 
 import com.radixdlt.api.JsonRpcHandler;
 import com.radixdlt.client.handler.HighLevelApiHandler;
+import com.radixdlt.statecomputer.AtomsCommittedToLedger;
 
 public class ArchiveApiModule extends AbstractModule {
 	@Override
@@ -159,7 +160,18 @@ public class ArchiveApiModule extends AbstractModule {
 	}
 
 	@ProvidesIntoSet
-	public EventProcessorOnRunner<?> clientApiStore(ClientApiStore clientApiStore) {
+	private EventProcessorOnRunner<?> newBatch(
+			BerkeleyClientApiStore berkeleyClientApiStore
+	) {
+		return new EventProcessorOnRunner<>(
+				Runners.APPLICATION,
+				AtomsCommittedToLedger.class,
+				berkeleyClientApiStore.newBatchEventProcessor()
+		);
+	}
+
+	@ProvidesIntoSet
+	public EventProcessorOnRunner<?> queueFlushProcessor(ClientApiStore clientApiStore) {
 		return new EventProcessorOnRunner<>(
 			Runners.APPLICATION,
 			ScheduledQueueFlush.class,
