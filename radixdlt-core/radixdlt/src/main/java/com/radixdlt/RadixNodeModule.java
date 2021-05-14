@@ -105,7 +105,7 @@ public final class RadixNodeModule extends AbstractModule {
 		// These cannot be changed without introducing possible forks with
 		// the network.
 		// TODO: Move these deeper into radix engine.
-		install(RadixEngineConfig.asModule(1, 100, 100000, 50));
+		install(RadixEngineConfig.asModule(1, 100, 10000, 50));
 
 		// System (e.g. time, random)
 		install(new SystemModule());
