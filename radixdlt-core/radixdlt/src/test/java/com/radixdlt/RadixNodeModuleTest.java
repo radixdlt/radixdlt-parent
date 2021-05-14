@@ -34,7 +34,6 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 public class RadixNodeModuleTest {
-
 	private RadixNodeModule radixNodeModule;
 
 	@BeforeClass

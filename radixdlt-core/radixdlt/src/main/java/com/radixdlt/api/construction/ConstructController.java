@@ -18,7 +18,13 @@
 
 package com.radixdlt.api.construction;
 
-import com.google.inject.Inject;
+import org.bouncycastle.util.encoders.Hex;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import com.radixdlt.api.Controller;
+import com.radixdlt.api.archive.JsonRpcServer;
+import com.radixdlt.api.archive.qualifier.Construct;
 import com.radixdlt.atom.Txn;
 import com.radixdlt.constraintmachine.REInstruction;
 import com.radixdlt.constraintmachine.REParsedTxn;
@@ -29,51 +35,55 @@ import com.radixdlt.mempool.MempoolAdd;
 import com.radixdlt.mempool.MempoolAddSuccess;
 import com.radixdlt.store.TxnIndex;
 import com.radixdlt.utils.Bytes;
-import io.undertow.server.HttpServerExchange;
-import io.undertow.server.RoutingHandler;
-import org.bouncycastle.util.encoders.Hex;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import com.radixdlt.api.Controller;
 
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
-import static com.radixdlt.api.RestUtils.respond;
-import static com.radixdlt.api.RestUtils.withBody;
+import io.undertow.server.HttpServerExchange;
+import io.undertow.server.RoutingHandler;
+
 import static com.radixdlt.api.JsonRpcUtil.jsonArray;
 import static com.radixdlt.api.JsonRpcUtil.jsonObject;
+import static com.radixdlt.api.RestUtils.respond;
+import static com.radixdlt.api.RestUtils.withBody;
 
-public final class ConstructionController implements Controller {
+public final class ConstructController implements Controller {
 	private final TxnParser txnParser;
 	private final TxnIndex txnIndex;
 	private final EventDispatcher<MempoolAdd> mempoolAddEventDispatcher;
+	private final JsonRpcServer jsonRpcServer;
 
-	@Inject
-	public ConstructionController(
+	public ConstructController(
 		TxnIndex txnIndex,
 		TxnParser txnParser,
-		EventDispatcher<MempoolAdd> mempoolAddEventDispatcher
+		EventDispatcher<MempoolAdd> mempoolAddEventDispatcher,
+		@Construct JsonRpcServer jsonRpcServer
 	) {
 		this.txnIndex = txnIndex;
 		this.txnParser = txnParser;
 		this.mempoolAddEventDispatcher = mempoolAddEventDispatcher;
+		this.jsonRpcServer = jsonRpcServer;
 	}
 
 	@Override
 	public void configureRoutes(RoutingHandler handler) {
+		handler.post("/construct", jsonRpcServer::handleHttpRequest);
+		handler.post("/construct/", jsonRpcServer::handleHttpRequest);
+
+		//TODO: remove
 		handler.post("/node/parse", this::handleParse);
 		handler.post("/node/txn", this::handleGetTxn);
 		handler.post("/node/submit", this::handleSubmit);
 	}
+
+	//TODO: remove all code below
 
 	private JSONObject instructionToObject(REInstruction i) {
 		return jsonObject()
 			.put("type", i.getMicroOp())
 			.put("data", Objects.toString(i.getData()));
 	}
-
 
 	void handleGetTxn(HttpServerExchange exchange) {
 		withBody(exchange, values -> {

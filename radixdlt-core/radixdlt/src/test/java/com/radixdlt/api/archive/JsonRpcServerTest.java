@@ -31,7 +31,7 @@ public class JsonRpcServerTest {
 	public void when_send_json_rpc_request_with_no_id__return_json_error_response() {
 		var server = new JsonRpcServer(Map.of());
 
-		var response = server.handleRpc(jsonObject().toString());
+		var response = server.handleRpcRequest(jsonObject().toString());
 
 		assertThat(response.getString("jsonrpc")).isEqualTo("2.0");
 		assertThat(response.has("result")).isFalse();
@@ -46,7 +46,7 @@ public class JsonRpcServerTest {
 	public void when_send_oversized_json_rpc_request_with__return_json_error_response() {
 		var server = new JsonRpcServer(Map.of(), 5);
 
-		var response = server.handleRpc("123456");
+		var response = server.handleRpcRequest("123456");
 		assertThat(response.getString("jsonrpc")).isEqualTo("2.0");
 		assertThat(response.has("result")).isFalse();
 		assertThat(response.has("id")).isTrue();

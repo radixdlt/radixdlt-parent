@@ -18,35 +18,27 @@
 
 package com.radixdlt.api.archive;
 
-import com.radixdlt.api.Controller;
-
-import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
+import com.radixdlt.api.Controller;
+import com.radixdlt.api.archive.qualifier.Archive;
 
-import io.undertow.server.HttpServerExchange;
 import io.undertow.server.RoutingHandler;
-
-import static com.radixdlt.api.RestUtils.respondAsync;
 
 public final class ArchiveController implements Controller {
 	private final JsonRpcServer jsonRpcServer;
 
 	@Inject
-	public ArchiveController(JsonRpcServer jsonRpcServer) {
+	public ArchiveController(@Archive JsonRpcServer jsonRpcServer) {
 		this.jsonRpcServer = jsonRpcServer;
 	}
 
 	@Override
 	public void configureRoutes(RoutingHandler handler) {
-		handler.post("/archive", this::handleRpc);
-		handler.post("/archive/", this::handleRpc);
-		//TODO: remove
-		handler.post("/rpc", this::handleRpc);
-		handler.post("/rpc/", this::handleRpc);
-	}
+		handler.post("/archive", jsonRpcServer::handleHttpRequest);
+		handler.post("/archive/", jsonRpcServer::handleHttpRequest);
 
-	@VisibleForTesting
-	void handleRpc(HttpServerExchange exchange) {
-		respondAsync(exchange, () -> jsonRpcServer.handleJsonRpc(exchange));
+		//TODO: remove
+		handler.post("/rpc", jsonRpcServer::handleHttpRequest);
+		handler.post("/rpc/", jsonRpcServer::handleHttpRequest);
 	}
 }

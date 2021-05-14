@@ -22,8 +22,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.io.CharStreams;
-import com.google.inject.Inject;
 import com.radixdlt.api.JsonRpcHandler;
 import com.radixdlt.api.JsonRpcUtil;
 
@@ -40,6 +40,7 @@ import static com.radixdlt.api.JsonRpcUtil.jsonObject;
 import static com.radixdlt.api.JsonRpcUtil.methodNotFound;
 import static com.radixdlt.api.JsonRpcUtil.parseError;
 import static com.radixdlt.api.JsonRpcUtil.serverError;
+import static com.radixdlt.api.RestUtils.respondAsync;
 
 import static java.util.Optional.ofNullable;
 
@@ -60,7 +61,6 @@ public final class JsonRpcServer {
 	 */
 	private final Map<String, JsonRpcHandler> handlers = new HashMap<>();
 
-	@Inject
 	public JsonRpcServer(Map<String, JsonRpcHandler> additionalHandlers) {
 		this(additionalHandlers, DEFAULT_MAX_REQUEST_SIZE);
 	}
@@ -79,16 +79,13 @@ public final class JsonRpcServer {
 		handlers.keySet().forEach(name -> log.trace("Registered JSON RPC method: {}", name));
 	}
 
-	/**
-	 * Extract a JSON RPC API request from an HttpServerExchange, handle it as usual and return the response
-	 *
-	 * @param exchange The JSON RPC API request
-	 *
-	 * @return The response
-	 */
-	public String handleJsonRpc(HttpServerExchange exchange) {
+	public void handleHttpRequest(HttpServerExchange exchange) {
+		respondAsync(exchange, () -> handle(exchange));
+	}
+
+	public String handle(HttpServerExchange exchange) {
 		try {
-			return handleRpc(readBody(exchange)).toString();
+			return handleRpcRequest(readBody(exchange)).toString();
 		} catch (IOException e) {
 			throw new IllegalStateException("RPC failed", e);
 		}
@@ -102,23 +99,17 @@ public final class JsonRpcServer {
 		return CharStreams.toString(new InputStreamReader(exchange.getInputStream(), StandardCharsets.UTF_8));
 	}
 
-	/**
-	 * Handle the string JSON-RPC request with size checks, return appropriate error if size exceeds the limit.
-	 *
-	 * @param requestString The string JSON-RPC request
-	 *
-	 * @return The response to the request, could be a JSON-RPC error
-	 */
-	JSONObject handleRpc(String requestString) {
-		log.trace("RPC: input {}", requestString);
+	@VisibleForTesting
+	JSONObject handleRpcRequest(String requestBody) {
+		log.trace("RPC: input {}", requestBody);
 
-		int length = requestString.getBytes(StandardCharsets.UTF_8).length;
+		int length = requestBody.getBytes(StandardCharsets.UTF_8).length;
 
 		if (length > maxRequestSizeBytes) {
 			return requestTooLongError(length);
 		}
 
-		return jsonObject(requestString)
+		return jsonObject(requestBody)
 			.map(this::handle)
 			.map(value -> logValue("result", value))
 			.fold(failure -> parseError("Unable to parse input: " + failure.message()), v -> v);
