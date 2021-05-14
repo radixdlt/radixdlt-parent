@@ -20,7 +20,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.radixdlt.client.serialization;
+package com.radixdlt.api.archive.serialization;
 
 import com.radixdlt.atommodel.system.SystemParticle;
 import com.radixdlt.atommodel.tokens.StakedTokensParticle;

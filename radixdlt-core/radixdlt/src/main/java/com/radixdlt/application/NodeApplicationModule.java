@@ -27,7 +27,7 @@ import com.google.inject.multibindings.Multibinder;
 import com.google.inject.multibindings.ProvidesIntoSet;
 import com.radixdlt.atommodel.tokens.TokensParticle;
 import com.radixdlt.atommodel.validators.ValidatorParticle;
-import com.radixdlt.chaos.mempoolfiller.MempoolFiller;
+import com.radixdlt.api.chaos.chaos.mempoolfiller.MempoolFiller;
 import com.radixdlt.consensus.bft.Self;
 import com.radixdlt.crypto.ECPublicKey;
 import com.radixdlt.engine.StateReducer;

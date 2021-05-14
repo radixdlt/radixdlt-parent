@@ -17,74 +17,69 @@
 
 package org.radix;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.Guice;
-import com.google.inject.Provides;
-import com.google.inject.Scopes;
-import com.google.inject.TypeLiteral;
-import com.google.inject.name.Named;
-import com.radixdlt.CryptoModule;
-import com.radixdlt.atom.TxAction;
-import com.radixdlt.atom.actions.CreateFixedToken;
-import com.radixdlt.atom.actions.TransferToken;
-import com.radixdlt.client.Rri;
-import com.radixdlt.consensus.LedgerProof;
-import com.radixdlt.consensus.bft.View;
-import com.radixdlt.counters.SystemCounters;
-import com.radixdlt.counters.SystemCountersImpl;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.radixdlt.crypto.exception.CryptoException;
-import com.radixdlt.crypto.exception.PrivateKeyException;
-import com.radixdlt.crypto.exception.PublicKeyException;
-
-import com.radixdlt.ledger.DtoLedgerProof;
-import com.radixdlt.ledger.LedgerAccumulator;
-import com.radixdlt.ledger.SimpleLedgerAccumulatorAndVerifier;
-import com.radixdlt.ledger.VerifiedTxnsAndProof;
-import com.radixdlt.statecomputer.EpochCeilingView;
-import com.radixdlt.statecomputer.LedgerAndBFTProof;
-import com.radixdlt.statecomputer.RadixEngineConfig;
-import com.radixdlt.statecomputer.RadixEngineModule;
-import com.radixdlt.statecomputer.checkpoint.RadixNativeTokenModule;
-import com.radixdlt.statecomputer.forks.BetanetForksModule;
-import com.radixdlt.statecomputer.forks.RadixEngineOnlyLatestForkModule;
-import com.radixdlt.store.EngineStore;
-import com.radixdlt.store.InMemoryEngineStore;
-import com.radixdlt.statecomputer.checkpoint.Genesis;
-import com.radixdlt.statecomputer.checkpoint.GenesisProvider;
-import com.radixdlt.sync.CommittedReader;
-import org.apache.logging.log4j.util.Strings;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.json.JSONObject;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterators;
-import com.radixdlt.DefaultSerialization;
-import com.radixdlt.atommodel.tokens.TokenDefinitionUtils;
-import com.radixdlt.crypto.ECKeyPair;
-import com.radixdlt.crypto.ECPublicKey;
-import com.radixdlt.identifiers.REAddr;
-import com.radixdlt.keys.Keys;
-import com.radixdlt.serialization.DsonOutput.Output;
-import com.radixdlt.serialization.Serialization;
-import com.radixdlt.universe.Universe;
-import com.radixdlt.universe.Universe.UniverseType;
-import com.radixdlt.utils.Bytes;
-import com.radixdlt.utils.Ints;
-import com.radixdlt.utils.UInt256;
-import com.radixdlt.utils.UInt256s;
-
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.logging.log4j.util.Strings;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.json.JSONObject;
+import org.radix.universe.output.HelmUniverseOutput;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterators;
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.Provides;
+import com.google.inject.Scopes;
+import com.google.inject.TypeLiteral;
+import com.radixdlt.CryptoModule;
+import com.radixdlt.DefaultSerialization;
+import com.radixdlt.atom.TxAction;
+import com.radixdlt.atom.actions.CreateFixedToken;
+import com.radixdlt.atom.actions.TransferToken;
+import com.radixdlt.atommodel.tokens.TokenDefinitionUtils;
+import com.radixdlt.api.archive.Rri;
+import com.radixdlt.consensus.bft.View;
+import com.radixdlt.counters.SystemCounters;
+import com.radixdlt.counters.SystemCountersImpl;
+import com.radixdlt.crypto.ECKeyPair;
+import com.radixdlt.crypto.ECPublicKey;
+import com.radixdlt.crypto.exception.CryptoException;
+import com.radixdlt.crypto.exception.PrivateKeyException;
+import com.radixdlt.crypto.exception.PublicKeyException;
+import com.radixdlt.identifiers.REAddr;
+import com.radixdlt.keys.Keys;
+import com.radixdlt.ledger.LedgerAccumulator;
+import com.radixdlt.ledger.SimpleLedgerAccumulatorAndVerifier;
+import com.radixdlt.ledger.VerifiedTxnsAndProof;
+import com.radixdlt.serialization.DsonOutput.Output;
+import com.radixdlt.serialization.Serialization;
+import com.radixdlt.statecomputer.LedgerAndBFTProof;
+import com.radixdlt.statecomputer.RadixEngineConfig;
+import com.radixdlt.statecomputer.RadixEngineModule;
+import com.radixdlt.statecomputer.checkpoint.Genesis;
+import com.radixdlt.statecomputer.checkpoint.GenesisProvider;
+import com.radixdlt.statecomputer.checkpoint.RadixNativeTokenModule;
+import com.radixdlt.statecomputer.forks.BetanetForksModule;
+import com.radixdlt.statecomputer.forks.RadixEngineOnlyLatestForkModule;
+import com.radixdlt.store.EngineStore;
+import com.radixdlt.store.InMemoryEngineStore;
+import com.radixdlt.sync.CommittedReader;
+import com.radixdlt.universe.Magic;
+import com.radixdlt.universe.Universe;
+import com.radixdlt.universe.Universe.UniverseType;
 import com.radixdlt.utils.AWSSecretManager;
 import com.radixdlt.utils.AWSSecretsOutputOptions;
-import org.radix.universe.output.HelmUniverseOutput;
+import com.radixdlt.utils.Bytes;
+import com.radixdlt.utils.Ints;
+import com.radixdlt.utils.UInt256;
+import com.radixdlt.utils.UInt256s;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -94,8 +89,13 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.Security;
 import java.time.Instant;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -318,7 +318,7 @@ public final class GenerateUniverses {
 				}
 
 				@Provides
-				@Named("magic")
+				@Magic
 				int magic(UniverseType universeType) {
 					return Universe.computeMagic(universeType);
 				}
