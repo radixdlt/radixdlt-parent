@@ -17,6 +17,7 @@
 
 package com.radixdlt.client.store.berkeley;
 
+import com.radixdlt.atom.actions.DeprecatedUnstakeTokens;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -677,6 +678,25 @@ public class BerkeleyClientApiStore implements ClientApiStore {
 			storeBalanceEntry(entry1);
 		} else if (action.getTxAction() instanceof UnstakeTokens) {
 			var unstakeTokens = (UnstakeTokens) action.getTxAction();
+			var rri = getRriOrFail(REAddr.ofNativeToken());
+			var entry0 = BalanceEntry.create(
+				unstakeTokens.accountAddr(),
+				unstakeTokens.from(),
+				rri,
+				UInt384.from(unstakeTokens.amount()),
+				true
+			);
+			var entry1 = BalanceEntry.create(
+				unstakeTokens.accountAddr(),
+				null,
+				rri,
+				UInt384.from(unstakeTokens.amount()),
+				false
+			);
+			storeBalanceEntry(entry0);
+			storeBalanceEntry(entry1);
+		} else if (action.getTxAction() instanceof DeprecatedUnstakeTokens) {
+			var unstakeTokens = (DeprecatedUnstakeTokens) action.getTxAction();
 			var rri = getRriOrFail(REAddr.ofNativeToken());
 			var entry0 = BalanceEntry.create(
 				unstakeTokens.accountAddr(),
