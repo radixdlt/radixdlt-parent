@@ -27,6 +27,8 @@ import com.sleepycat.je.Environment;
 import com.sleepycat.je.EnvironmentConfig;
 
 import java.io.File;
+import java.text.CharacterIterator;
+import java.text.StringCharacterIterator;
 import java.util.concurrent.TimeUnit;
 
 import static com.sleepycat.je.Durability.COMMIT_NO_SYNC;
@@ -69,6 +71,8 @@ public final class DatabaseEnvironment {
 		environmentConfig.setCacheMode(CacheMode.EVICT_LN);
 
 		this.environment = new Environment(dbHome, environmentConfig);
+
+		log.info("DB cache size set to {} ({} bytes)", toHumanReadable(cacheSize), cacheSize);
 	}
 
 	public void stop() {
@@ -86,5 +90,26 @@ public final class DatabaseEnvironment {
 		}
 
 		return this.environment;
+	}
+
+	private static String toHumanReadable(long bytes) {
+		var absB = bytes == Long.MIN_VALUE
+					? Long.MAX_VALUE
+					: Math.abs(bytes);
+
+		if (absB < 1024) {
+			return bytes + " B";
+		}
+
+		var value = absB;
+		var ci = new StringCharacterIterator("KMGTPE");
+
+		for (int i = 40; i >= 0 && absB > 0xfffccccccccccccL >> i; i -= 10) {
+			value >>= 10;
+			ci.next();
+		}
+
+		value *= Long.signum(bytes);
+		return String.format("%.1f %ciB", value / 1024.0, ci.current());
 	}
 }
