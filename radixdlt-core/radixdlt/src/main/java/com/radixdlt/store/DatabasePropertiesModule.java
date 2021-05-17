@@ -35,8 +35,8 @@ public final class DatabasePropertiesModule extends AbstractModule {
     @DatabaseCacheSize
     long databaseCacheSize(RuntimeProperties properties) {
         long minCacheSize = properties.get("db.cache_size.min", Math.max(50000000, (long) (Runtime.getRuntime().maxMemory() * 0.1)));
-        long maxCacheSize = properties.get("db.cache_size.max", (long) (Runtime.getRuntime().maxMemory() * 0.25));
-        long cacheSize = properties.get("db.cache_size", (long) (Runtime.getRuntime().maxMemory() * 0.125));
+        long maxCacheSize = properties.get("db.cache_size.max", (long) (Runtime.getRuntime().maxMemory() * 0.5));
+        long cacheSize = properties.get("db.cache_size", (long) (Runtime.getRuntime().maxMemory() * 0.25));
         cacheSize = Math.max(cacheSize, minCacheSize);
         cacheSize = Math.min(cacheSize, maxCacheSize);
         return cacheSize;
