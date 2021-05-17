@@ -18,6 +18,8 @@ package com.radixdlt.api.archive.service;
 
 import org.junit.Test;
 
+import com.radixdlt.api.service.ScheduledCacheCleanup;
+import com.radixdlt.api.service.TransactionStatusService;
 import com.radixdlt.atom.Txn;
 import com.radixdlt.crypto.HashUtils;
 import com.radixdlt.environment.ScheduledEventDispatcher;
