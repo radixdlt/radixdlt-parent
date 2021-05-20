@@ -17,18 +17,24 @@
 
 package com.radixdlt.client.service;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
 import com.radixdlt.counters.SystemCounters;
 import com.radixdlt.environment.EventProcessor;
 import com.radixdlt.environment.ScheduledEventDispatcher;
 
+import java.math.BigDecimal;
 import java.util.EnumMap;
 import java.util.List;
 
 import static com.radixdlt.counters.SystemCounters.CounterType;
 
 public class NetworkInfoService {
+	private static final Logger logger = LogManager.getLogger();
+
 	private static final long DEFAULT_COLLECTING_INTERVAL = 1000L; // 1 second
 	private static final long DEFAULT_AVERAGING_FACTOR = 10L; // averaging time in multiples of collecting interval
 
@@ -70,11 +76,20 @@ public class NetworkInfoService {
 
 	@VisibleForTesting
 	void collectStats() {
+		logger.info("Stats update");
 		COUNTERS.forEach(cnt -> statistics.compute(cnt, this::updateCounter));
 	}
 
 	private ValueHolder updateCounter(CounterType counterType, ValueHolder holder) {
-		return counterType != null ? holder.update(systemCounters.get(counterType)) : null;
+		return counterType != null ? doUpdate(counterType, holder) : null;
+	}
+
+	private ValueHolder doUpdate(CounterType counterType, ValueHolder holder) {
+		var update = holder.update(systemCounters.get(counterType));
+
+		logger.info("Update results: {} avg {} ({})", counterType, update.average(), update.averageAsBigDecimal());
+
+		return update;
 	}
 
 	private static class ValueHolder {
@@ -93,6 +108,10 @@ public class NetworkInfoService {
 
 		public long average() {
 			return calculator.asLong();
+		}
+
+		public BigDecimal averageAsBigDecimal() {
+			return calculator.asBigDecimal();
 		}
 	}
 }
