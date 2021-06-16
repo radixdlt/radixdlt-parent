@@ -11,6 +11,7 @@ import com.radixdlt.atom.actions.TransferToken;
 import com.radixdlt.atommodel.system.state.ValidatorStake;
 import com.radixdlt.atommodel.tokens.TokenDefinitionUtils;
 import com.radixdlt.chaos.mempoolfiller.MempoolFillerModule;
+import com.radixdlt.client.ArchiveApiModule;
 import com.radixdlt.client.service.TransactionStatusService;
 import com.radixdlt.client.store.ClientApiStore;
 import com.radixdlt.client.store.berkeley.BerkeleyClientApiStore;
@@ -31,6 +32,7 @@ import com.radixdlt.integration.staking.DeterministicRunner;
 import com.radixdlt.mempool.MempoolAdd;
 import com.radixdlt.mempool.MempoolAddSuccess;
 import com.radixdlt.mempool.MempoolConfig;
+import com.radixdlt.properties.RuntimeProperties;
 import com.radixdlt.statecomputer.LedgerAndBFTProof;
 import com.radixdlt.statecomputer.RadixEngineConfig;
 import com.radixdlt.statecomputer.TxnsCommittedToLedger;
@@ -40,6 +42,8 @@ import com.radixdlt.statecomputer.forks.RadixEngineForksLatestOnlyModule;
 import com.radixdlt.store.DatabaseLocation;
 import com.radixdlt.utils.UInt256;
 import com.radixdlt.utils.UInt384;
+import org.apache.commons.cli.ParseException;
+import org.json.JSONObject;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -97,12 +101,19 @@ public class TxMultipleTransfers {
 			new SingleNodeAndPeersDeterministicNetworkModule(),
 			new MockedGenesisModule(),
 			new MempoolFillerModule(),
+			new ArchiveApiModule(),
 			new AbstractModule() {
 				@Override
 				protected void configure() {
 					bind(ClientApiStore.class).to(BerkeleyClientApiStore.class).in(Scopes.SINGLETON);
 					bindConstant().annotatedWith(Names.named("numPeers")).to(0);
 					bindConstant().annotatedWith(DatabaseLocation.class).to(folder.getRoot().getAbsolutePath());
+				}
+
+				@Singleton
+				@Provides
+				private RuntimeProperties runtimeProperties() throws ParseException {
+					return new RuntimeProperties(new JSONObject(), new String[0]);
 				}
 
 				@ProvidesIntoSet
