@@ -251,10 +251,12 @@ public class BerkeleyClientApiStore implements ClientApiStore {
 	public Result<List<BalanceEntry>> getTokenBalances(REAddr addr, BalanceType type) {
 		try (var cursor = addressBalances.openCursor(null, null)) {
 			var key = asAddrBalanceKey(addr);
+
 			var data = entry();
 			var status = readBalance(() -> cursor.getSearchKeyRange(key, data, null), data);
 
 			if (status != OperationStatus.SUCCESS) {
+				System.out.println("XXXX " + status);
 				return Result.ok(List.of());
 			}
 
@@ -266,8 +268,8 @@ public class BerkeleyClientApiStore implements ClientApiStore {
 						() -> log.error("Error deserializing existing balance while scanning DB for address {}", addr)
 					)
 					.toOptional()
-					.filter(entry -> entry.getType().equals(type))
-					.filter(entry -> entry.getOwner().equals(addr))
+					.filter(entry ->  { return entry.getType().equals(type); })
+					.filter(entry -> { return entry.getOwner().equals(addr); })
 					.map(entry -> entry.rri().equals("stake-ownership") ? computeStakeEntry(entry) : entry)
 					.ifPresent(list::add);
 

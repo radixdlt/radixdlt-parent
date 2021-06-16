@@ -334,8 +334,8 @@ public final class RadixEngineStateComputer implements StateComputer {
 
 	@Override
 	public void commit(VerifiedTxnsAndProof verifiedTxnsAndProof, VerifiedVertexStoreState vertexStoreState) {
-		var txCommitted = commitInternal(verifiedTxnsAndProof, vertexStoreState);
 
+		var txCommitted = commitInternal(verifiedTxnsAndProof, vertexStoreState);
 		// TODO: refactor mempool to be less generic and make this more efficient
 		// TODO: Move this into engine
 		List<Txn> removed = this.mempool.committed(txCommitted);
