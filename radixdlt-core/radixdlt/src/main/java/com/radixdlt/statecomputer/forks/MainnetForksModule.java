@@ -29,7 +29,7 @@ public final class MainnetForksModule extends AbstractModule {
 
 	@Provides
 	ImmutableList<ForkBuilder> mainnetForks() {
-		return ImmutableList.of(olympiaFirstEpoch(), olympia());
+		return ImmutableList.of(olympiaFirstEpoch(), olympia(), olympia_v2(), olympia_v3(), olympia_v4());
 	}
 
 	private ForkBuilder olympiaFirstEpoch() {
@@ -67,6 +67,63 @@ public final class MainnetForksModule extends AbstractModule {
 				Amount.ofTokens(10), // Rewards per proposal
 				9800 // 98.00% threshold for completed proposals to get any rewards
 			)
+		);
+	}
+
+	private ForkBuilder olympia_v2() {
+		return new ForkBuilder(
+				"olympia_v2",
+				5L,
+				ForksPredicates.stakeVoting(0.5),
+				MainnetEngineRules.olympiaV1,
+				new RERulesConfig(
+						Amount.ofMicroTokens(200), // 0.0002XRD per byte fee
+						OptionalInt.of(50), // 50 Txns per round
+						10_000,
+						150, // Two weeks worth of epochs
+						Amount.ofTokens(100), // Minimum stake
+						150, // Two weeks worth of epochs
+						Amount.ofTokens(10), // Rewards per proposal
+						9800 // 98.00% threshold for completed proposals to get any rewards
+				)
+		);
+	}
+
+	private ForkBuilder olympia_v3() {
+		return new ForkBuilder(
+				"olympia_v3",
+				15L,
+				ForksPredicates.stakeVoting(0.25),
+				MainnetEngineRules.olympiaV1,
+				new RERulesConfig(
+						Amount.ofMicroTokens(200), // 0.0002XRD per byte fee
+						OptionalInt.of(50), // 50 Txns per round
+						10_000,
+						150, // Two weeks worth of epochs
+						Amount.ofTokens(100), // Minimum stake
+						150, // Two weeks worth of epochs
+						Amount.ofTokens(10), // Rewards per proposal
+						9800 // 98.00% threshold for completed proposals to get any rewards
+				)
+		);
+	}
+
+	private ForkBuilder olympia_v4() {
+		return new ForkBuilder(
+				"olympia_v4",
+				30L,
+				ForksPredicates.stakeVoting(0.01),
+				MainnetEngineRules.olympiaV1,
+				new RERulesConfig(
+						Amount.ofMicroTokens(200), // 0.0002XRD per byte fee
+						OptionalInt.of(50), // 50 Txns per round
+						10_000,
+						150, // Two weeks worth of epochs
+						Amount.ofTokens(100), // Minimum stake
+						150, // Two weeks worth of epochs
+						Amount.ofTokens(10), // Rewards per proposal
+						9800 // 98.00% threshold for completed proposals to get any rewards
+				)
 		);
 	}
 }
