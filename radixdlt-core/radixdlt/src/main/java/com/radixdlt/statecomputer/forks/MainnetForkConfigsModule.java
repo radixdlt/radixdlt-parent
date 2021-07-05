@@ -53,7 +53,7 @@ public final class MainnetForkConfigsModule extends AbstractModule {
 	}
 
 	@ProvidesIntoSet
-	ForkConfig olympia() {
+	public ForkConfig olympia() {
 		return new ForkConfig(
 			2L,
 			"olympia",

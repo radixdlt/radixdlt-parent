@@ -61,4 +61,10 @@ public class EndProcedure<S extends ReducerState> implements Procedure {
 			throw new ProcedureException(e);
 		}
 	}
+
+
+	@Override
+	public String toString() {
+		return endReducer.getClass().getSimpleName();
+	}
 }
