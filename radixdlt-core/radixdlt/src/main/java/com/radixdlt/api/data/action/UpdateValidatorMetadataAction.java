@@ -17,25 +17,30 @@
 
 package com.radixdlt.api.data.action;
 
+import com.google.common.hash.HashCode;
 import com.radixdlt.atom.TxAction;
 import com.radixdlt.atom.actions.UpdateValidatorMetadata;
 import com.radixdlt.crypto.ECPublicKey;
 
+import java.util.Optional;
 import java.util.stream.Stream;
 
 class UpdateValidatorMetadataAction implements TransactionAction {
 	private final ECPublicKey validatorKey;
 	private final String name;
 	private final String url;
+	private final Optional<HashCode> forkVoteHash;
 
-	UpdateValidatorMetadataAction(ECPublicKey validatorKey, String name, String url) {
+	UpdateValidatorMetadataAction(ECPublicKey validatorKey, String name, String url, Optional<HashCode> forkVoteHash) {
 		this.validatorKey = validatorKey;
 		this.name = name;
 		this.url = url;
+		this.forkVoteHash = forkVoteHash;
 	}
 
 	@Override
 	public Stream<TxAction> toAction() {
-		return Stream.of(new UpdateValidatorMetadata(validatorKey, name, url));
+		return Stream.of(new UpdateValidatorMetadata(validatorKey, name, url, forkVoteHash));
 	}
 }
+

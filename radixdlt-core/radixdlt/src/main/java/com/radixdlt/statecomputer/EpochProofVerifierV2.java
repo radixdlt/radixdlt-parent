@@ -26,13 +26,18 @@ import com.radixdlt.consensus.bft.BFTValidatorSet;
 import com.radixdlt.constraintmachine.REProcessedTxn;
 import com.radixdlt.engine.BatchVerifier;
 import com.radixdlt.engine.MetadataException;
+import com.radixdlt.store.EngineStore;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class EpochProofVerifierV2 implements BatchVerifier<LedgerAndBFTProof> {
 	@Override
-	public void testMetadata(LedgerAndBFTProof metadata, List<REProcessedTxn> txns) throws MetadataException {
+	public LedgerAndBFTProof processMetadata(
+		LedgerAndBFTProof metadata,
+		EngineStore<LedgerAndBFTProof> engineStore,
+		List<REProcessedTxn> txns
+	) throws MetadataException {
 		NextValidatorSetEvent nextValidatorSetEvent = null;
 		for (int i = 0; i < txns.size(); i++) {
 			var processed = txns.get(i);
@@ -76,5 +81,7 @@ public class EpochProofVerifierV2 implements BatchVerifier<LedgerAndBFTProof> {
 				throw new MetadataException("Validator set computed does not match proof.");
 			}
 		}
+
+		return metadata;
 	}
 }

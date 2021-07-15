@@ -41,6 +41,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 public class UpdateValidatorMetadataTest {
@@ -83,7 +84,7 @@ public class UpdateValidatorMetadataTest {
 		var key = ECKeyPair.generateNew();
 
 		// Act and Assert
-		var registerTxn = this.engine.construct(new UpdateValidatorMetadata(key.getPublicKey(), "name", "http://test.com"))
+		var registerTxn = this.engine.construct(new UpdateValidatorMetadata(key.getPublicKey(), "name", "http://test.com", Optional.empty()))
 			.signAndBuild(key::sign);
 		this.engine.execute(List.of(registerTxn));
 	}

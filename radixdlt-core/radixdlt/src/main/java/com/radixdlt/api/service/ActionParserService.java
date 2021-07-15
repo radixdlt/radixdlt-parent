@@ -17,6 +17,8 @@
 
 package com.radixdlt.api.service;
 
+import com.radixdlt.statecomputer.forks.ForkConfig;
+import com.radixdlt.statecomputer.forks.Forks;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -50,10 +52,12 @@ import static java.util.Optional.ofNullable;
 
 public final class ActionParserService {
 	private final Addressing addressing;
+	private final Forks forks;
 
 	@Inject
-	public ActionParserService(Addressing addressing) {
+	public ActionParserService(Addressing addressing, Forks forks) {
 		this.addressing = addressing;
+		this.forks = forks;
 	}
 
 	public Result<List<TransactionAction>> parse(JSONArray actions) {
@@ -136,7 +140,11 @@ public final class ActionParserService {
 					validator(element),
 					optionalName(element),
 					optionalUrl(element)
-				).map(TransactionAction::updateMetadata);
+				).map((validatorKey, name, url) -> {
+					final var maybeForkVoteHash =
+						forks.getCandidateFork().map(f -> ForkConfig.voteHash(validatorKey, f));
+					return TransactionAction.updateMetadata(validatorKey, name, url, maybeForkVoteHash);
+				});
 
 			case UPDATE_VALIDATOR_FEE:
 				return allOf(

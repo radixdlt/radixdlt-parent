@@ -29,8 +29,10 @@ import com.radixdlt.consensus.liveness.ProposerElection;
 import com.radixdlt.consensus.liveness.WeightedRotatingLeaders;
 import com.radixdlt.ledger.LedgerUpdate;
 import com.radixdlt.application.system.FeeTable;
+import com.radixdlt.statecomputer.forks.Forks;
+import com.radixdlt.statecomputer.forks.ForksEpochStore;
 import com.radixdlt.statecomputer.forks.ForksModule;
-import com.radixdlt.statecomputer.forks.MainnetForkConfigsModule;
+import com.radixdlt.statecomputer.forks.MainnetForksModule;
 import com.radixdlt.statecomputer.forks.RERulesConfig;
 import org.junit.Assert;
 import org.junit.Before;
@@ -114,6 +116,9 @@ public class SubmissionServiceTest {
 	@Inject
 	private SubmissionService submissionService;
 
+	@Inject
+	private Forks forks;
+
 	private REAddr nativeToken = REAddr.ofNativeToken();
 
 	private final InMemoryEngineStore<LedgerAndBFTProof> engineStore = new InMemoryEngineStore<>();
@@ -141,7 +146,6 @@ public class SubmissionServiceTest {
 
 			@Override
 			public void configure() {
-				install(new MainnetForkConfigsModule());
 				install(new RadixEngineForksLatestOnlyModule(
 					RERulesConfig.testingDefault().overrideFeeTable(
 						FeeTable.create(
@@ -151,6 +155,7 @@ public class SubmissionServiceTest {
 					)
 				));
 				install(new ForksModule());
+				install(new MainnetForksModule());
 				install(MempoolConfig.asModule(10, 10));
 
 				var validatorSet = BFTValidatorSet.from(registeredNodes.stream().map(ECKeyPair::getPublicKey)
@@ -162,6 +167,7 @@ public class SubmissionServiceTest {
 				bind(new TypeLiteral<EngineStore<LedgerAndBFTProof>>() {}).toInstance(engineStore);
 				bind(PersistentVertexStore.class).toInstance(mock(PersistentVertexStore.class));
 				bind(CommittedReader.class).toInstance(CommittedReader.mocked());
+				bind(ForksEpochStore.class).toInstance(ForksEpochStore.mocked());
 				bind(LedgerAccumulator.class).to(SimpleLedgerAccumulatorAndVerifier.class);
 				bind(new TypeLiteral<EventDispatcher<MempoolAddSuccess>>() {})
 					.toInstance(TypedMocks.rmock(EventDispatcher.class));
@@ -218,7 +224,11 @@ public class SubmissionServiceTest {
 			throw new IllegalStateException("Genesis must be end of epoch");
 		}
 
-		radixEngine.execute(genesisTxns.getTxns(), LedgerAndBFTProof.create(genesisLedgerHeader), PermissionLevel.SYSTEM);
+		radixEngine.execute(
+			genesisTxns.getTxns(),
+			LedgerAndBFTProof.create(genesisLedgerHeader, null),
+			PermissionLevel.SYSTEM
+		);
 	}
 
 	@Before

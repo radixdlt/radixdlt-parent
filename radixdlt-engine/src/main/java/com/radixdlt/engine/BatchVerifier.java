@@ -19,6 +19,7 @@
 package com.radixdlt.engine;
 
 import com.radixdlt.constraintmachine.REProcessedTxn;
+import com.radixdlt.store.EngineStore;
 
 import java.util.List;
 
@@ -29,7 +30,8 @@ import java.util.List;
  * @param <M> class of metadata
  */
 public interface BatchVerifier<M> {
-	default void testMetadata(M metadata, List<REProcessedTxn> txns) throws MetadataException {
+	default M processMetadata(M metadata, EngineStore<M> engineStore, List<REProcessedTxn> txns) throws MetadataException {
+		return metadata;
 	}
 
 	static <M> BatchVerifier<M> empty() {

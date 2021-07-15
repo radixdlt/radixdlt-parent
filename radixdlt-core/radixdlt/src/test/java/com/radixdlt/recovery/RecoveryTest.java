@@ -24,7 +24,7 @@ import com.radixdlt.application.system.FeeTable;
 import com.radixdlt.environment.Environment;
 import com.radixdlt.environment.deterministic.LastEventsModule;
 import com.radixdlt.statecomputer.forks.ForksModule;
-import com.radixdlt.statecomputer.forks.MainnetForkConfigsModule;
+import com.radixdlt.statecomputer.forks.MainnetForksModule;
 import com.radixdlt.statecomputer.forks.RERulesConfig;
 import org.assertj.core.api.Condition;
 import org.junit.After;
@@ -144,7 +144,6 @@ public class RecoveryTest {
 				Amount.ofTokens(1000),
 				Amount.ofTokens(100)
 			),
-			new MainnetForkConfigsModule(),
 			new RadixEngineForksLatestOnlyModule(
 				new RERulesConfig(
 					FeeTable.noFees(),
@@ -158,6 +157,7 @@ public class RecoveryTest {
 					10
 				)),
 			new ForksModule(),
+			new MainnetForksModule(),
 			MempoolConfig.asModule(10, 10),
 			new LastEventsModule(EpochViewUpdate.class, Vote.class),
 			new AbstractModule() {

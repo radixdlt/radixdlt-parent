@@ -29,7 +29,7 @@ import com.radixdlt.environment.deterministic.LastEventsModule;
 import com.radixdlt.integration.FailOnEvent;
 import com.radixdlt.mempool.MempoolAddFailure;
 import com.radixdlt.serialization.DeserializeException;
-import com.radixdlt.statecomputer.forks.MainnetForkConfigsModule;
+import com.radixdlt.statecomputer.forks.MainnetForksModule;
 import com.radixdlt.utils.PrivateKeys;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -168,8 +168,8 @@ public class StakingUnstakingValidatorsTest {
 			.limit(20)
 			.collect(ImmutableList.toImmutableList());
 		this.radixEngineConfiguration = Modules.combine(
-			new MainnetForkConfigsModule(),
 			new ForksModule(),
+			new MainnetForksModule(),
 			forkModule
 		);
 		this.maxRounds = maxRounds;
@@ -330,8 +330,8 @@ public class StakingUnstakingValidatorsTest {
 		}
 
 		public Map<BFTNode, Map<String, String>> getValidators() {
-			var forkConfig = forks.get(getEpoch());
-			var reParser = forkConfig.getParser();
+			final var forkConfig = forks.getCurrentFork(entryStore.getEpochsForkHashes());
+			var reParser = forkConfig.engineRules().getParser();
 			Map<BFTNode, Map<String, String>> map = entryStore.reduceUpParticles(
 				new HashMap<>(), (i, p) -> {
 					var stakeData = (ValidatorStakeData) p;
@@ -372,8 +372,8 @@ public class StakingUnstakingValidatorsTest {
 
 		@SuppressWarnings("unchecked")
 		public UInt256 getTotalNativeTokens() {
-			var forkConfig = forks.get(getEpoch());
-			var reParser = forkConfig.getParser();
+			final var forkConfig = forks.getCurrentFork(entryStore.getEpochsForkHashes());
+			var reParser = forkConfig.engineRules().getParser();
 			var deserialization = reParser.getSubstateDeserialization();
 			var totalTokens = entryStore.reduceUpParticles(
 				UInt256.ZERO,

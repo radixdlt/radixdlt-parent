@@ -17,6 +17,7 @@
 
 package com.radixdlt.network.p2p.transport;
 
+import com.google.common.hash.HashCode;
 import com.radixdlt.counters.SystemCounters;
 import com.radixdlt.crypto.ECKeyOps;
 import com.radixdlt.environment.EventDispatcher;
@@ -51,6 +52,7 @@ public final class PeerChannelInitializer extends ChannelInitializer<SocketChann
 	private final P2PConfig config;
 	private final Addressing addressing;
 	private final int magic;
+	private final HashCode latestKnownForkHash;
 	private final SystemCounters counters;
 	private final Serialization serialization;
 	private final SecureRandom secureRandom;
@@ -63,6 +65,7 @@ public final class PeerChannelInitializer extends ChannelInitializer<SocketChann
 		P2PConfig config,
 		Addressing addressing,
 		int magic,
+		HashCode latestKnownForkHash,
 		SystemCounters counters,
 		Serialization serialization,
 		SecureRandom secureRandom,
@@ -74,6 +77,7 @@ public final class PeerChannelInitializer extends ChannelInitializer<SocketChann
 		this.config = Objects.requireNonNull(config);
 		this.addressing = Objects.requireNonNull(addressing);
 		this.magic = magic;
+		this.latestKnownForkHash = Objects.requireNonNull(latestKnownForkHash);
 		this.counters = Objects.requireNonNull(counters);
 		this.serialization = Objects.requireNonNull(serialization);
 		this.secureRandom = Objects.requireNonNull(secureRandom);
@@ -89,6 +93,7 @@ public final class PeerChannelInitializer extends ChannelInitializer<SocketChann
 			config,
 			addressing,
 			magic,
+			latestKnownForkHash,
 			counters,
 			serialization,
 			secureRandom,
@@ -123,3 +128,4 @@ public final class PeerChannelInitializer extends ChannelInitializer<SocketChann
 			.addLast("bytesEncoder", new ByteArrayEncoder());
 	}
 }
+

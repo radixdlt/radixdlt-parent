@@ -18,6 +18,7 @@
 package com.radixdlt.network.p2p.test;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.hash.HashCode;
 import com.radixdlt.crypto.ECKeyOps;
 import com.radixdlt.crypto.exception.PublicKeyException;
 
@@ -62,6 +63,7 @@ final class MockP2PNetwork {
 			clientPeer.injector.getInstance(P2PConfig.class),
 			Addressing.ofNetwork(Network.LOCALNET),
 			1,
+			HashCode.fromLong(0),
 			clientPeer.injector.getInstance(SystemCounters.class),
 			clientPeer.injector.getInstance(Serialization.class),
 			new SecureRandom(),
@@ -76,6 +78,7 @@ final class MockP2PNetwork {
 			serverPeer.injector.getInstance(P2PConfig.class),
 			Addressing.ofNetwork(Network.LOCALNET),
 			1,
+			HashCode.fromLong(0),
 			serverPeer.injector.getInstance(SystemCounters.class),
 			serverPeer.injector.getInstance(Serialization.class),
 			new SecureRandom(),

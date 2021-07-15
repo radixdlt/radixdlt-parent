@@ -30,6 +30,8 @@ import com.radixdlt.network.p2p.RadixNodeUri;
 import com.radixdlt.networks.Addressing;
 import com.radixdlt.networks.NetworkId;
 import com.radixdlt.serialization.Serialization;
+import com.radixdlt.statecomputer.forks.ForkConfig;
+import com.radixdlt.statecomputer.forks.LatestKnownForkConfig;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -44,12 +46,13 @@ public final class PeerOutboundBootstrapImpl implements PeerOutboundBootstrap {
 	private final P2PConfig config;
 	private final Addressing addressing;
 	private final int networkId;
+	private final ForkConfig latestKnownForkConfig;
 	private final SystemCounters counters;
 	private final Serialization serialization;
 	private final SecureRandom secureRandom;
 	private final ECKeyOps ecKeyOps;
 	private final EventDispatcher<PeerEvent> peerEventDispatcher;
-	private Provider<PeerControl> peerControl;
+	private final Provider<PeerControl> peerControl;
 
 	private final NioEventLoopGroup clientWorkerGroup;
 
@@ -58,6 +61,7 @@ public final class PeerOutboundBootstrapImpl implements PeerOutboundBootstrap {
 		P2PConfig config,
 		Addressing addressing,
 		@NetworkId int networkId,
+		@LatestKnownForkConfig ForkConfig latestKnownForkConfig,
 		SystemCounters counters,
 		Serialization serialization,
 		SecureRandom secureRandom,
@@ -68,6 +72,7 @@ public final class PeerOutboundBootstrapImpl implements PeerOutboundBootstrap {
 		this.config = Objects.requireNonNull(config);
 		this.addressing = Objects.requireNonNull(addressing);
 		this.networkId = networkId;
+		this.latestKnownForkConfig = Objects.requireNonNull(latestKnownForkConfig);
 		this.counters = Objects.requireNonNull(counters);
 		this.serialization = Objects.requireNonNull(serialization);
 		this.secureRandom = Objects.requireNonNull(secureRandom);
@@ -89,6 +94,7 @@ public final class PeerOutboundBootstrapImpl implements PeerOutboundBootstrap {
 				config,
 				addressing,
 				networkId,
+				latestKnownForkConfig.hash(),
 				counters,
 				serialization,
 				secureRandom,

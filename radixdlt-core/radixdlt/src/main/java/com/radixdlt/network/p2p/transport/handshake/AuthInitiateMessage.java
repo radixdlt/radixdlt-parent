@@ -47,25 +47,31 @@ public final class AuthInitiateMessage {
 	@DsonOutput(DsonOutput.Output.ALL)
 	private final HashCode nonce;
 
-	@JsonProperty("magic")
+	@JsonProperty("networkId")
 	@DsonOutput(DsonOutput.Output.ALL)
-	private final int magic;
+	private final int networkId;
+
+	@JsonProperty("latestKnownForkHash")
+	@DsonOutput(DsonOutput.Output.ALL)
+	private final HashCode latestKnownForkHash;
 
 	@JsonCreator
 	public static AuthInitiateMessage deserialize(
 		@JsonProperty("signature") ECDSASignature signature,
 		@JsonProperty("publicKey") HashCode publicKey,
 		@JsonProperty("nonce") HashCode nonce,
-		@JsonProperty("magic") int magic
+		@JsonProperty("networkId") int networkId,
+		@JsonProperty("latestKnownForkHash") HashCode latestKnownForkHash
 	) {
-		return new AuthInitiateMessage(signature, publicKey, nonce, magic);
+		return new AuthInitiateMessage(signature, publicKey, nonce, networkId, latestKnownForkHash);
 	}
 
-	public AuthInitiateMessage(ECDSASignature signature, HashCode publicKey, HashCode nonce, int magic) {
+	public AuthInitiateMessage(ECDSASignature signature, HashCode publicKey, HashCode nonce, int networkId, HashCode latestKnownForkHash) {
 		this.signature = signature;
 		this.publicKey = publicKey;
 		this.nonce = nonce;
-		this.magic = magic;
+		this.networkId = networkId;
+		this.latestKnownForkHash = latestKnownForkHash;
 	}
 
 	public ECDSASignature getSignature() {
@@ -80,8 +86,12 @@ public final class AuthInitiateMessage {
 		return nonce;
 	}
 
-	public int getMagic() {
-		return magic;
+	public int getNetworkId() {
+		return networkId;
+	}
+
+	public HashCode getLatestKnownForkHash() {
+		return latestKnownForkHash;
 	}
 
 	@Override
@@ -96,11 +106,13 @@ public final class AuthInitiateMessage {
 		return Objects.equals(signature, that.signature)
 			&& Objects.equals(publicKey, that.publicKey)
 			&& Objects.equals(nonce, that.nonce)
-			&& magic == that.magic;
+			&& networkId == that.networkId
+			&& latestKnownForkHash == that.latestKnownForkHash;
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(signature, publicKey, nonce, magic);
+		return Objects.hash(signature, publicKey, nonce, networkId, latestKnownForkHash);
 	}
 }
+

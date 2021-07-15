@@ -276,12 +276,12 @@ public final class RadixEngine<M> {
 			}
 		}
 
-		public RadixEngineResult execute(List<Txn> txns) throws RadixEngineException {
+		public RadixEngineResult<M> execute(List<Txn> txns) throws RadixEngineException {
 			assertNotDeleted();
 			return engine.execute(txns);
 		}
 
-		public RadixEngineResult execute(List<Txn> txns, PermissionLevel permissionLevel) throws RadixEngineException {
+		public RadixEngineResult<M> execute(List<Txn> txns, PermissionLevel permissionLevel) throws RadixEngineException {
 			assertNotDeleted();
 			return engine.execute(txns, null, permissionLevel);
 		}
@@ -349,7 +349,7 @@ public final class RadixEngine<M> {
 	 *
 	 * @throws RadixEngineException on state conflict, dependency issues or bad atom
 	 */
-	public RadixEngineResult execute(List<Txn> txns) throws RadixEngineException {
+	public RadixEngineResult<M> execute(List<Txn> txns) throws RadixEngineException {
 		return execute(txns, null, PermissionLevel.USER);
 	}
 
@@ -361,7 +361,11 @@ public final class RadixEngine<M> {
 	 * @param permissionLevel permission level to execute on
 	 * @throws RadixEngineException on state conflict or dependency issues
 	 */
-	public RadixEngineResult execute(List<Txn> txns, M meta, PermissionLevel permissionLevel) throws RadixEngineException {
+	public RadixEngineResult<M> execute(
+		List<Txn> txns,
+		M meta,
+		PermissionLevel permissionLevel
+	) throws RadixEngineException {
 		synchronized (stateUpdateEngineLock) {
 			if (!branches.isEmpty()) {
 				throw new IllegalStateException(
@@ -375,7 +379,7 @@ public final class RadixEngine<M> {
 		}
 	}
 
-	private RadixEngineResult executeInternal(
+	private RadixEngineResult<M> executeInternal(
 		EngineStore.EngineStoreInTransaction<M> engineStoreInTransaction,
 		List<Txn> txns,
 		M meta,
@@ -424,21 +428,20 @@ public final class RadixEngine<M> {
 		}
 
 		try {
-			batchVerifier.testMetadata(meta, processedTxns);
+			final var processedMetadata = batchVerifier.processMetadata(meta, engineStore, processedTxns);
+			if (processedMetadata != null) {
+				engineStoreInTransaction.storeMetadata(processedMetadata);
+			}
+			return RadixEngineResult.create(
+				processedTxns,
+				processedMetadata,
+				verificationStopwatch.elapsed(TimeUnit.MILLISECONDS),
+				storageStopwatch.elapsed(TimeUnit.MILLISECONDS)
+			);
 		} catch (MetadataException e) {
 			logger.error("Invalid metadata: " + processedTxns);
 			throw e;
 		}
-
-		if (meta != null) {
-			engineStoreInTransaction.storeMetadata(meta);
-		}
-
-		return RadixEngineResult.create(
-			processedTxns,
-			verificationStopwatch.elapsed(TimeUnit.MILLISECONDS),
-			storageStopwatch.elapsed(TimeUnit.MILLISECONDS)
-		);
 	}
 
 	public interface TxBuilderExecutable {

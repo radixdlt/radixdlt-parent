@@ -45,12 +45,12 @@ public class SyncRadixApiRadixEngineTest {
 	@Test
 	public void testConfiguration() throws Exception {
 		prepareClient(CONFIGURATION)
-			.map(RadixApi::withTrace)
-			.onFailure(failure -> fail(failure.toString()))
-			.onSuccess(client -> client.radixEngine().configuration()
+				.map(RadixApi::withTrace)
 				.onFailure(failure -> fail(failure.toString()))
-				.onSuccess(configuration -> assertEquals(2, configuration.size()))
-				.onSuccess(configuration -> assertEquals("olympia", configuration.get(1).getName())));
+				.onSuccess(client -> client.radixEngine().configuration()
+						.onFailure(failure -> fail(failure.toString()))
+						.onSuccess(configuration -> assertEquals(2, configuration.size()))
+						.onSuccess(configuration -> assertEquals("olympia", configuration.get(1).getName())));
 	}
 
 	@Test

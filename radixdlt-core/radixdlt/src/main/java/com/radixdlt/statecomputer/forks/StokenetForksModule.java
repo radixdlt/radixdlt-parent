@@ -22,15 +22,18 @@ import com.google.inject.AbstractModule;
 import com.google.inject.multibindings.ProvidesIntoSet;
 import com.radixdlt.application.system.FeeTable;
 import com.radixdlt.application.tokens.Amount;
+import com.radixdlt.crypto.HashUtils;
 
+import java.nio.charset.StandardCharsets;
 import java.util.OptionalInt;
 
-public final class StokenetForkConfigsModule extends AbstractModule {
+public final class StokenetForksModule extends AbstractModule {
 	@ProvidesIntoSet
-	ForkConfig stokenet() {
-		return new ForkConfig(
-			0L,
+	ForkBuilder stokenet() {
+		return new ForkBuilder(
 			"olympia-first-epoch",
+			HashUtils.sha256("olympia-first-epoch".getBytes(StandardCharsets.UTF_8)),
+			0L,
 			RERulesVersion.OLYMPIA_V1,
 			new RERulesConfig(
 				FeeTable.create(

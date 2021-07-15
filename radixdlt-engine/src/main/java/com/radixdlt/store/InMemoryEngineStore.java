@@ -104,7 +104,7 @@ public final class InMemoryEngineStore<M> implements EngineStore<M> {
 
 			@Override
 			public void storeMetadata(M metadata) {
-
+				// no-op
 			}
 
 			@Override

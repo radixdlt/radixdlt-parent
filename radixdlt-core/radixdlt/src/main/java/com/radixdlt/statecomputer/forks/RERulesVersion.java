@@ -45,9 +45,9 @@ import com.radixdlt.atom.actions.UpdateValidatorFee;
 import com.radixdlt.atom.actions.UpdateValidatorMetadata;
 import com.radixdlt.atom.actions.UpdateValidatorOwner;
 import com.radixdlt.application.system.construction.CreateSystemConstructorV2;
+import com.radixdlt.application.system.construction.FeeReservePutConstructor;
 import com.radixdlt.application.system.construction.NextEpochConstructorV3;
 import com.radixdlt.application.system.construction.NextViewConstructorV3;
-import com.radixdlt.application.system.construction.FeeReservePutConstructor;
 import com.radixdlt.application.system.scrypt.EpochUpdateConstraintScrypt;
 import com.radixdlt.application.system.scrypt.SystemConstraintScrypt;
 import com.radixdlt.application.system.scrypt.RoundUpdateConstraintScrypt;
@@ -87,10 +87,10 @@ public enum RERulesVersion {
 	OLYMPIA_V1 {
 		@Override
 		public RERules create(RERulesConfig config) {
-			var maxRounds = config.getMaxRounds();
-			var perByteFee = config.getFeeTable().getPerByteFee().toSubunits();
-			var perResourceFee = config.getFeeTable().getPerResourceFee().toSubunits();
-			var rakeIncreaseDebouncerEpochLength = config.getRakeIncreaseDebouncerEpochLength();
+			final var maxRounds = config.getMaxRounds();
+			final var perByteFee = config.getFeeTable().getPerByteFee().toSubunits();
+			final var perResourceFee = config.getFeeTable().getPerResourceFee().toSubunits();
+			final var rakeIncreaseDebouncerEpochLength = config.getRakeIncreaseDebouncerEpochLength();
 
 			final CMAtomOS v4 = new CMAtomOS();
 			v4.load(new ValidatorConstraintScryptV2());
@@ -116,7 +116,7 @@ public enum RERulesVersion {
 					ResourceFeeMeter.create(perResourceFee)
 				)
 			);
-			var betanet4 = new ConstraintMachineConfig(
+			var constraintMachineConfig = new ConstraintMachineConfig(
 				v4.getProcedures(),
 				v4.buildSubstateDeserialization(),
 				v4.buildVirtualSubstateDeserialization(),
@@ -158,17 +158,16 @@ public enum RERulesVersion {
 				.build();
 
 			return new RERules(
-				"mainnet",
+				this,
 				parser,
 				serialization,
-				betanet4,
+				constraintMachineConfig,
 				actionConstructors,
 				new EpochProofVerifierV2(),
 				config
 			);
 		}
 	};
-
 
 	public abstract RERules create(RERulesConfig config);
 }

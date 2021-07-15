@@ -27,8 +27,8 @@ import com.radixdlt.crypto.ECPublicKey;
 import com.radixdlt.networks.Addressing;
 import com.radixdlt.statecomputer.LedgerAndBFTProof;
 import com.radixdlt.statecomputer.forks.Forks;
+import com.radixdlt.statecomputer.forks.ForksEpochStore;
 import com.radixdlt.store.EngineStore;
-import com.radixdlt.systeminfo.InMemorySystemInfo;
 import com.radixdlt.utils.functional.FunctionalUtils;
 import com.radixdlt.utils.functional.Result;
 import com.radixdlt.utils.functional.Result.Mapper2;
@@ -44,21 +44,21 @@ import static com.radixdlt.utils.functional.FunctionalUtils.skipUntil;
 import static com.radixdlt.utils.functional.Tuple.tuple;
 
 public class ValidatorInfoService {
-	private final EngineStore<LedgerAndBFTProof> entryStore;
+	private final EngineStore<LedgerAndBFTProof> engineStore;
+	private final ForksEpochStore forksEpochStore;
 	private final Forks forks;
-	private final InMemorySystemInfo inMemorySystemInfo;
 	private final Addressing addressing;
 
 	@Inject
 	public ValidatorInfoService(
-		EngineStore<LedgerAndBFTProof> entryStore,
+		EngineStore<LedgerAndBFTProof> engineStore,
+		ForksEpochStore forksEpochStore,
 		Forks forks,
-		InMemorySystemInfo inMemorySystemInfo,
 		Addressing addressing
 	) {
-		this.entryStore = entryStore;
+		this.engineStore = engineStore;
+		this.forksEpochStore = forksEpochStore;
 		this.forks = forks;
-		this.inMemorySystemInfo = inMemorySystemInfo;
 		this.addressing = addressing;
 	}
 
@@ -90,7 +90,7 @@ public class ValidatorInfoService {
 	public List<ValidatorInfoDetails> getAllValidators() {
 		var reducer = new AllValidatorsReducer();
 
-		var validators = entryStore.reduceUpParticles(
+		var validators = engineStore.reduceUpParticles(
 			AllValidators.create(),
 			reducer.outputReducer(),
 			retrieveEpochParser(),
@@ -104,9 +104,8 @@ public class ValidatorInfoService {
 	}
 
 	private SubstateDeserialization retrieveEpochParser() {
-		return forks.get(inMemorySystemInfo.getCurrentProof().getEpoch())
-			.getParser()
-			.getSubstateDeserialization();
+		final var forkConfig = forks.getCurrentFork(forksEpochStore.getEpochsForkHashes());
+		return forkConfig.engineRules().getParser().getSubstateDeserialization();
 	}
 
 	@SuppressWarnings("unchecked")

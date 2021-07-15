@@ -63,7 +63,8 @@ public final class AuthHandshaker {
 	private final ECKeyOps ecKeyOps;
 	private final byte[] nonce;
 	private final ECKeyPair ephemeralKey;
-	private final int magic;
+	private final int networkId;
+	private final HashCode latestKnownForkHash;
 	private boolean isInitiator = false;
 	private Optional<byte[]> initiatePacketOpt = Optional.empty();
 	private Optional<byte[]> responsePacketOpt = Optional.empty();
@@ -73,14 +74,16 @@ public final class AuthHandshaker {
 		Serialization serialization,
 		SecureRandom secureRandom,
 		ECKeyOps ecKeyOps,
-		int magic
+		int networkId,
+		HashCode latestKnownForkHash
 	) {
 		this.serialization = Objects.requireNonNull(serialization);
 		this.secureRandom = Objects.requireNonNull(secureRandom);
 		this.ecKeyOps = Objects.requireNonNull(ecKeyOps);
 		this.nonce = randomBytes(NONCE_SIZE);
 		this.ephemeralKey = ECKeyPair.generateNew();
-		this.magic = magic;
+		this.networkId = networkId;
+		this.latestKnownForkHash = latestKnownForkHash;
 	}
 
 	public byte[] initiate(ECPublicKey remotePubKey) {
@@ -113,7 +116,8 @@ public final class AuthHandshaker {
 			signature,
 			HashCode.fromBytes(ecKeyOps.nodePubKey().getBytes()),
 			HashCode.fromBytes(nonce),
-			magic
+			networkId,
+			latestKnownForkHash
 		);
 	}
 
@@ -125,7 +129,7 @@ public final class AuthHandshaker {
 		final var message = serialization.fromDson(plaintext, AuthInitiateMessage.class);
 		final var remotePubKey = ECPublicKey.fromBytes(message.getPublicKey().asBytes());
 
-		if (message.getMagic() != this.magic) {
+		if (message.getNetworkId() != this.networkId) {
 			return Pair.of(null, AuthHandshakeResult.error(
 				"Network ID mismatch",
 				Optional.of(NodeId.fromPublicKey(remotePubKey))
@@ -134,7 +138,8 @@ public final class AuthHandshaker {
 
 		final var response = new AuthResponseMessage(
 			HashCode.fromBytes(ephemeralKey.getPublicKey().getBytes()),
-			HashCode.fromBytes(nonce)
+			HashCode.fromBytes(nonce),
+			latestKnownForkHash
 		);
 		final var encodedResponse = serialization.toDson(response, DsonOutput.Output.WIRE);
 
@@ -156,7 +161,9 @@ public final class AuthHandshaker {
 		this.responsePacketOpt = Optional.of(packet);
 		this.remotePubKeyOpt = Optional.of(remotePubKey);
 
-		final var handshakeResult = finalizeHandshake(remoteEphemeralKey, message.getNonce());
+		final var handshakeResult = finalizeHandshake(
+			remoteEphemeralKey, message.getNonce(), message.getLatestKnownForkHash()
+		);
 		return Pair.of(packet, handshakeResult);
 	}
 
@@ -167,7 +174,7 @@ public final class AuthHandshaker {
 		final var message = serialization.fromDson(plaintext, AuthResponseMessage.class);
 		this.responsePacketOpt = Optional.of(data);
 		final var remoteEphemeralKey = ECPublicKey.fromBytes(message.getEphemeralPublicKey().asBytes());
-		return finalizeHandshake(remoteEphemeralKey, message.getNonce());
+		return finalizeHandshake(remoteEphemeralKey, message.getNonce(), message.getLatestKnownForkHash());
 	}
 
 	private ECPublicKey extractEphemeralKey(ECDSASignature signature, HashCode nonce, ECPublicKey publicKey) {
@@ -177,7 +184,11 @@ public final class AuthHandshaker {
 		return ECPublicKey.recoverFrom(HashCode.fromBytes(signed), signature).orElseThrow();
 	}
 
-	private AuthHandshakeSuccess finalizeHandshake(ECPublicKey remoteEphemeralKey, HashCode remoteNonce) {
+	private AuthHandshakeSuccess finalizeHandshake(
+		ECPublicKey remoteEphemeralKey,
+		HashCode remoteNonce,
+		HashCode remoteLatestKnownForkHash
+	) {
 		final var initiatePacket = initiatePacketOpt.get();
 		final var responsePacket = responsePacketOpt.get();
 		final var remotePubKey = remotePubKeyOpt.get();
@@ -208,7 +219,7 @@ public final class AuthHandshaker {
 			macSecrets.getSecond()
 		);
 
-		return AuthHandshakeResult.success(remotePubKey, secrets);
+		return AuthHandshakeResult.success(remotePubKey, secrets, remoteLatestKnownForkHash);
 	}
 
 	private Pair<KeccakDigest, KeccakDigest> macSecretSetup(
@@ -241,3 +252,4 @@ public final class AuthHandshaker {
 		return arr;
 	}
 }
+

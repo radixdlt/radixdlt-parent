@@ -17,6 +17,7 @@
 
 package com.radixdlt.api.data.action;
 
+import com.google.common.hash.HashCode;
 import com.radixdlt.atom.TxAction;
 import com.radixdlt.crypto.ECPublicKey;
 import com.radixdlt.identifiers.REAddr;
@@ -56,8 +57,8 @@ public interface TransactionAction {
 		return new UnregisterValidatorAction(validatorKey);
 	}
 
-	static TransactionAction updateMetadata(ECPublicKey validatorKey, Optional<String> name, Optional<String> url) {
-		return new UpdateValidatorMetadataAction(validatorKey, name.orElse(null), url.orElse(null));
+	static TransactionAction updateMetadata(ECPublicKey validatorKey, Optional<String> name, Optional<String> url, Optional<HashCode> forkVoteHash) {
+		return new UpdateValidatorMetadataAction(validatorKey, name.orElse(null), url.orElse(null), forkVoteHash);
 	}
 
 	static TransactionAction updateValidatorFee(ECPublicKey validatorKey, int percentage) {

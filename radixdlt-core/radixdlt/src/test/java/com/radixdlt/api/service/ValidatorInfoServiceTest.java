@@ -14,8 +14,12 @@
  * either express or implied.  See the License for the specific
  * language governing permissions and limitations under the License.
  */
+
 package com.radixdlt.api.service;
 
+import com.radixdlt.statecomputer.forks.ForkConfig;
+import com.radixdlt.statecomputer.forks.Forks;
+import com.radixdlt.statecomputer.forks.ForksEpochStore;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -29,7 +33,6 @@ import com.radixdlt.engine.parser.REParser;
 import com.radixdlt.networks.Addressing;
 import com.radixdlt.networks.Network;
 import com.radixdlt.statecomputer.LedgerAndBFTProof;
-import com.radixdlt.statecomputer.forks.Forks;
 import com.radixdlt.statecomputer.forks.RERules;
 import com.radixdlt.store.EngineStore;
 import com.radixdlt.systeminfo.InMemorySystemInfo;
@@ -40,7 +43,6 @@ import java.util.Optional;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -115,13 +117,14 @@ public class ValidatorInfoServiceTest {
 	@SuppressWarnings("unchecked")
 	private ValidatorInfoService setUpService() {
 		var engineStore = (EngineStore<LedgerAndBFTProof>) mock(EngineStore.class);
+		var forksEpochStore = mock(ForksEpochStore.class);
 		var inMemorySystemInfo = mock(InMemorySystemInfo.class);
 		var forks = mock(Forks.class);
 		var rules = mock(RERules.class);
 		var parser = mock(REParser.class);
 
 		var validatorInfoService = new ValidatorInfoService(
-			engineStore, forks, inMemorySystemInfo, Addressing.ofNetwork(Network.LOCALNET)
+			engineStore, forksEpochStore, forks, Addressing.ofNetwork(Network.LOCALNET)
 		);
 
 		var particle1 = new ValidatorMetaData(validator1, "V1", "http://v1.com");
@@ -136,7 +139,9 @@ public class ValidatorInfoServiceTest {
 			.setStake(validator3, UInt256.TEN);
 
 		when(inMemorySystemInfo.getCurrentProof()).thenReturn(LedgerProof.mock());
-		when(forks.get(anyLong())).thenReturn(rules);
+		final var forkConfig = mock(ForkConfig.class);
+		when(forkConfig.engineRules()).thenReturn(rules);
+		when(forks.getCurrentFork(any())).thenReturn(forkConfig);
 		when(rules.getParser()).thenReturn(parser);
 		when(parser.getSubstateDeserialization()).thenReturn(mock(SubstateDeserialization.class));
 		when(engineStore.reduceUpParticles(any(), any(), any(), any())).thenReturn(validators);

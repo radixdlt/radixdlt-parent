@@ -22,18 +22,19 @@ import com.google.inject.AbstractModule;
 import com.google.inject.multibindings.ProvidesIntoSet;
 import com.radixdlt.application.tokens.Amount;
 import com.radixdlt.application.system.FeeTable;
+import com.radixdlt.crypto.HashUtils;
 
+import java.nio.charset.StandardCharsets;
 import java.util.OptionalInt;
 
-/**
- * The forks for betanet and the epochs at which they will occur.
- */
-public final class MainnetForkConfigsModule extends AbstractModule {
+public final class MainnetForksModule extends AbstractModule {
+
 	@ProvidesIntoSet
-	ForkConfig olympiaFirstEpoch() {
-		return new ForkConfig(
-			0L,
+	ForkBuilder olympiaFirstEpoch() {
+		return new ForkBuilder(
 			"olympia-first-epoch",
+			HashUtils.sha256("hello world".getBytes(StandardCharsets.UTF_8)),
+			0L,
 			RERulesVersion.OLYMPIA_V1,
 			new RERulesConfig(
 				FeeTable.create(
@@ -53,10 +54,11 @@ public final class MainnetForkConfigsModule extends AbstractModule {
 	}
 
 	@ProvidesIntoSet
-	ForkConfig olympia() {
-		return new ForkConfig(
-			2L,
+	ForkBuilder olympia() {
+		return new ForkBuilder(
 			"olympia",
+			HashUtils.sha256("olympia".getBytes(StandardCharsets.UTF_8)),
+			2L,
 			RERulesVersion.OLYMPIA_V1,
 			new RERulesConfig(
 				FeeTable.create(

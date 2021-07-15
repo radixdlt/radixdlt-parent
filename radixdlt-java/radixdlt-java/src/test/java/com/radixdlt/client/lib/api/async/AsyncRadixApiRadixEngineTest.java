@@ -34,11 +34,11 @@ public class AsyncRadixApiRadixEngineTest {
 
 	private static final String NETWORK_ID = "{\"result\":{\"networkId\":99},\"id\":\"1\",\"jsonrpc\":\"2.0\"}";
 	private static final String CONFIGURATION = "{\"result\":[{\"maxSigsPerRound\":50,\"maxValidators\":100,"
-		+ "\"name\":\"olympia-first-epoch\",\"maxRounds\":1500000,\"epoch\":0,\"version\":\"olympia_v1\"},"
-		+ "{\"maxSigsPerRound\":50,\"maxValidators\":100,\"name\":\"olympia\",\"maxRounds\":10000,\"epoch\":2,"
-		+ "\"version\":\"olympia_v1\"}],\"id\":\"2\",\"jsonrpc\":\"2.0\"}\n";
+			+ "\"name\":\"olympia-first-epoch\",\"maxRounds\":1500000,\"epoch\":0,\"version\":\"olympia_v1\"},"
+			+ "{\"maxSigsPerRound\":50,\"maxValidators\":100,\"name\":\"olympia\",\"maxRounds\":10000,\"epoch\":2,"
+			+ "\"version\":\"olympia_v1\"}],\"id\":\"2\",\"jsonrpc\":\"2.0\"}\n";
 	private static final String DATA = "{\"result\":{\"systemTransactions\":37884,\"invalidProposedCommands\":1,"
-		+ "\"userTransactions\":2016},\"id\":\"2\",\"jsonrpc\":\"2.0\"}\n";
+			+ "\"userTransactions\":2016},\"id\":\"2\",\"jsonrpc\":\"2.0\"}\n";
 
 	private final HttpClient client = mock(HttpClient.class);
 
